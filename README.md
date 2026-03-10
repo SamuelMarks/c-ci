@@ -35,10 +35,10 @@ on:
 
 jobs:
   build:
-    uses: SamuelMarks/c-ghactions/.github/workflows/c-cmake-ci.yml@main
+    uses: SamuelMarks/c-ghactions/.github/workflows/c-cmake-ci.yml@master
     with:
       # Optional: Change default build type here
-      build_type: 'Release' 
+      build_type: 'Release'
 ```
 
 ---

@@ -5,7 +5,7 @@ on:
     inputs:
       build_type:
         description: 'Default CMake build type (Release, Debug, RelWithDebInfo, MinSizeRel)'
-        default: 'Release'
+        default: 'Debug'
         type: string
 
 jobs:
@@ -181,7 +181,7 @@ jobs:
             thread: "ON"
             deps: FETCHCONTENT
             rtc: "OFF"
-            
+
           - name: macOS Clang | Static Lib | ANSI | Single-thread | LTO OFF | System
             os: macos-latest
             compiler: clang
@@ -195,11 +195,44 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Cache vcpkg
+        id: cache-vcpkg
+        if: matrix.deps == 'VCPKG'
+        uses: actions/cache@v5
+        with:
+          path: ${{ github.workspace }}/vcpkg
+          key: ${{ runner.os }}-vcpkg-project0
+
+      - name: checkout vcpkg
+        if: matrix.deps == 'VCPKG' && steps.cache-vcpkg.outputs.cache-hit != 'true'
+        uses: actions/checkout@v5
+        with:
+          repository: "offscale/vcpkg"
+          ref: project0
+          path: vcpkg
+
+      - name: Bootstrap vcpkg
+        if: matrix.deps == 'VCPKG' && steps.cache-vcpkg.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            ./vcpkg/bootstrap-vcpkg.bat
+          else
+            ./vcpkg/bootstrap-vcpkg.sh
+          fi
+
+      - name: Set vcpkg environment variables
+        if: matrix.deps == 'VCPKG'
+        shell: bash
+        run: |
+          echo "VCPKG_ROOT=${{ github.workspace }}/vcpkg" >> "$GITHUB_ENV"
+          echo "VCPKG_INSTALLATION_ROOT=${{ github.workspace }}/vcpkg" >> "$GITHUB_ENV"
 
       - name: Setup Cygwin
         if: matrix.compiler == 'cygwin'
-        uses: cygwin/cygwin-install-action@v4
+        uses: cygwin/cygwin-install-action@v6
         with:
           packages: cmake,gcc-core,gcc-g++,make,dos2unix
 
@@ -234,13 +267,13 @@ jobs:
 
       - name: Setup MinGW
         if: matrix.compiler == 'mingw'
-        uses: egor-tensin/setup-mingw@v2
+        uses: egor-tensin/setup-mingw@v3
 
       - name: Configure CMake
         shell: bash
         run: |
           CMAKE_EXTRA_ARGS=""
-          
+
           # Dependency Provider (VCPKG)
           if [ "${{ matrix.deps }}" = "VCPKG" ]; then
             if [ -n "$VCPKG_INSTALLATION_ROOT" ]; then
@@ -261,13 +294,13 @@ jobs:
           if [ "${{ matrix.compiler }}" = "mingw" ]; then
             CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -G \"MinGW Makefiles\""
           fi
-          
+
           # Clang Compiler Overrides (Linux)
           if [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ runner.os }}" = "Linux" ]; then
             export CC=clang
             export CXX=clang++
           fi
-          
+
           # Execute CMake
           cmake -B build -S . \
             -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} \

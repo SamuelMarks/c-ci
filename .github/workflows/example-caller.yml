@@ -8,7 +8,7 @@ on:
 
 jobs:
   call-reusable-workflow:
-    # In a real project, this would be: 
+    # In a real project, this would be:
     # uses: SamuelMarks/c-ghactions/.github/workflows/c-cmake-ci.yml@master
     uses: ./.github/workflows/c-cmake-ci.yml
     with:
