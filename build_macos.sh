@@ -15,7 +15,7 @@ cmake -S "${SRC_DIR}" -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
   -DCDD_THREADING=ON \
   -DCDD_DEPS=FETCHCONTENT \
   -DCDD_MSVC_RTC=OFF
-cmake --build "${BUILD_DIR}" --parallel 4
+cmake --build "${BUILD_DIR}" --config "${BUILD_TYPE}" --parallel 4
 cd "${BUILD_DIR}" && ctest -C "${BUILD_TYPE}" --output-on-failure
 cd "${SRC_DIR}"
 
@@ -30,7 +30,7 @@ cmake -S "${SRC_DIR}" -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
   -DCDD_THREADING=OFF \
   -DCDD_DEPS=SYSTEM \
   -DCDD_MSVC_RTC=OFF
-cmake --build "${BUILD_DIR}" --parallel 4
+cmake --build "${BUILD_DIR}" --config "${BUILD_TYPE}" --parallel 4
 cd "${BUILD_DIR}" && ctest -C "${BUILD_TYPE}" --output-on-failure
 cd "${SRC_DIR}"
 

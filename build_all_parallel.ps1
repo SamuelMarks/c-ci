@@ -5,7 +5,7 @@ $scripts = @(
     "build_msvc2026.cmd",
     "build_mingw.cmd",
     "build_cygwin.cmd",
-    "build_docker_debian.cmd",
+    "build_docker_ubuntu.cmd",
     "build_docker_alpine.cmd"
 )
 

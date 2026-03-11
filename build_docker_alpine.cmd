@@ -33,7 +33,7 @@ echo echo "=====================================================================
 echo export CC=gcc
 echo export CXX=g++
 echo cmake -S /workspace_src -B /workspace_build/build_linux_gcc_shared -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DBUILD_SHARED_LIBS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCDD_CHARSET=UNICODE -DCDD_THREADING=ON -DCDD_DEPS=VCPKG -DCDD_MSVC_RTC=OFF -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake
-echo cmake --build /workspace_build/build_linux_gcc_shared --parallel 4
+echo cmake --build /workspace_build/build_linux_gcc_shared --config "${BUILD_TYPE}" --parallel 4
 echo cd /workspace_build/build_linux_gcc_shared ^&^& ctest -C "${BUILD_TYPE}" --output-on-failure
 echo cd /workspace_build
 echo.
@@ -43,7 +43,7 @@ echo echo "=====================================================================
 echo export CC=gcc
 echo export CXX=g++
 echo cmake -S /workspace_src -B /workspace_build/build_linux_gcc_static -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCDD_CHARSET=ANSI -DCDD_THREADING=OFF -DCDD_DEPS=FETCHCONTENT -DCDD_MSVC_RTC=OFF
-echo cmake --build /workspace_build/build_linux_gcc_static --parallel 4
+echo cmake --build /workspace_build/build_linux_gcc_static --config "${BUILD_TYPE}" --parallel 4
 echo cd /workspace_build/build_linux_gcc_static ^&^& ctest -C "${BUILD_TYPE}" --output-on-failure
 echo cd /workspace_build
 echo.
@@ -53,7 +53,7 @@ echo echo "=====================================================================
 echo export CC=clang
 echo export CXX=clang++
 echo cmake -S /workspace_src -B /workspace_build/build_linux_clang_static -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCDD_CHARSET=ANSI -DCDD_THREADING=OFF -DCDD_DEPS=SYSTEM -DCDD_MSVC_RTC=OFF
-echo cmake --build /workspace_build/build_linux_clang_static --parallel 4
+echo cmake --build /workspace_build/build_linux_clang_static --config "${BUILD_TYPE}" --parallel 4
 echo cd /workspace_build/build_linux_clang_static ^&^& ctest -C "${BUILD_TYPE}" --output-on-failure
 echo cd /workspace_build
 echo.
@@ -63,7 +63,7 @@ echo echo "=====================================================================
 echo export CC=clang
 echo export CXX=clang++
 echo cmake -S /workspace_src -B /workspace_build/build_linux_clang_shared -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DBUILD_SHARED_LIBS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCDD_CHARSET=UNICODE -DCDD_THREADING=ON -DCDD_DEPS=VCPKG -DCDD_MSVC_RTC=OFF -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake
-echo cmake --build /workspace_build/build_linux_clang_shared --parallel 4
+echo cmake --build /workspace_build/build_linux_clang_shared --config "${BUILD_TYPE}" --parallel 4
 echo cd /workspace_build/build_linux_clang_shared ^&^& ctest -C "${BUILD_TYPE}" --output-on-failure
 echo cd /workspace_build
 ) > "!RUN_SCRIPT!"

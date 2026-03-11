@@ -10,7 +10,7 @@ echo ======================================================================
 set "BUILD_DIR=%CD%\build_mingw_shared"
 cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DBUILD_SHARED_LIBS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCDD_CHARSET=ANSI -DCDD_THREADING=ON -DCDD_DEPS=SYSTEM -DCDD_MSVC_RTC=OFF
 if errorlevel 1 exit /b 1
-cmake --build "%BUILD_DIR%" --parallel 4
+cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%" --parallel 4
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
 set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
@@ -24,7 +24,7 @@ echo ======================================================================
 set "BUILD_DIR=%CD%\build_mingw_static"
 cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCDD_CHARSET=UNICODE -DCDD_THREADING=OFF -DCDD_DEPS=FETCHCONTENT -DCDD_MSVC_RTC=OFF
 if errorlevel 1 exit /b 1
-cmake --build "%BUILD_DIR%" --parallel 4
+cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%" --parallel 4
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
 set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
