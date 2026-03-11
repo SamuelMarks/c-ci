@@ -236,6 +236,11 @@ jobs:
         with:
           packages: cmake,gcc-core,gcc-g++,make,dos2unix
 
+      - name: Configure Cygwin bash to ignore CR
+        if: matrix.compiler == 'cygwin'
+        shell: pwsh
+        run: Add-Content -Path $env:GITHUB_ENV -Value "SHELLOPTS=igncr"
+
       - name: Install Line Ending Tools (Linux/macOS)
         if: runner.os == 'Linux' || runner.os == 'macOS'
         shell: bash
@@ -272,14 +277,14 @@ jobs:
       - name: Configure CMake
         shell: bash
         run: |
-          CMAKE_EXTRA_ARGS=""
+          CMAKE_EXTRA_ARGS=()
 
           # Dependency Provider (VCPKG)
           if [ "${{ matrix.deps }}" = "VCPKG" ]; then
             if [ -n "$VCPKG_INSTALLATION_ROOT" ]; then
-              CMAKE_EXTRA_ARGS="-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+              CMAKE_EXTRA_ARGS+=("-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake")
             elif [ -n "$VCPKG_ROOT" ]; then
-              CMAKE_EXTRA_ARGS="-DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+              CMAKE_EXTRA_ARGS+=("-DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake")
             else
               echo "Warning: VCPKG_INSTALLATION_ROOT is not set, but VCPKG is requested. CMake will rely on system path."
             fi
@@ -287,12 +292,12 @@ jobs:
 
           # MSVC 2005 Generator (Currently commented out in matrix, but logic remains for future)
           # if [ "${{ matrix.compiler }}" = "msvc" ] && [ "${{ matrix.msvc_version }}" = "2005" ]; then
-          #   CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -G \"Visual Studio 8 2005\""
+          #   CMAKE_EXTRA_ARGS+=("-G" "Visual Studio 8 2005")
           # fi
 
           # MinGW Generator
           if [ "${{ matrix.compiler }}" = "mingw" ]; then
-            CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -G \"MinGW Makefiles\""
+            CMAKE_EXTRA_ARGS+=("-G" "MinGW Makefiles")
           fi
 
           # Clang Compiler Overrides (Linux)
@@ -311,7 +316,7 @@ jobs:
             -DCDD_DEPS=${{ matrix.deps }} \
             -DCDD_MSVC_RTC=${{ matrix.rtc }} \
             -DCMAKE_MSVC_RUNTIME_LIBRARY=${{ matrix.crt }} \
-            $CMAKE_EXTRA_ARGS
+            "${CMAKE_EXTRA_ARGS[@]}"
 
       - name: Build
         run: cmake --build build --config ${{ inputs.build_type }} --parallel 4

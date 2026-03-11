@@ -13,7 +13,8 @@ if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%" --parallel 4
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
-ctest -C "%BUILD_TYPE%" --output-on-failure
+set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
+ctest -C \x22%BUILD_TYPE%\x22 --output-on-failure
 if errorlevel 1 exit /b 1
 popd
 
@@ -38,12 +39,13 @@ if defined VCPKG_INSTALLATION_ROOT (
   set "CMAKE_EXTRA_ARGS=-DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake"
 )
 
-cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "Visual Studio 18 2026" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCDD_CHARSET=ANSI -DCDD_THREADING=OFF -DCDD_DEPS=VCPKG -DCDD_MSVC_RTC=RTC1 -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded %CMAKE_EXTRA_ARGS%
+cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "Visual Studio 18 2026" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCDD_CHARSET=ANSI -DCDD_THREADING=OFF -DCDD_DEPS=FETCHCONTENT -DCDD_MSVC_RTC=RTC1 -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded %CMAKE_EXTRA_ARGS%
 if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%" --parallel 4
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
-ctest -C "%BUILD_TYPE%" --output-on-failure
+set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
+ctest -C \x22%BUILD_TYPE%\x22 --output-on-failure
 if errorlevel 1 exit /b 1
 popd
 
@@ -56,7 +58,8 @@ if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%" --parallel 4
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
-ctest -C "%BUILD_TYPE%" --output-on-failure
+set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
+ctest -C \x22%BUILD_TYPE%\x22 --output-on-failure
 if errorlevel 1 exit /b 1
 popd
 

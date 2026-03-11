@@ -13,7 +13,8 @@ if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --parallel 4
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
-ctest -C "%BUILD_TYPE%" --output-on-failure
+set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
+ctest -C \x22%BUILD_TYPE%\x22 --output-on-failure
 if errorlevel 1 exit /b 1
 popd
 
@@ -26,7 +27,8 @@ if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --parallel 4
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
-ctest -C "%BUILD_TYPE%" --output-on-failure
+set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
+ctest -C \x22%BUILD_TYPE%\x22 --output-on-failure
 if errorlevel 1 exit /b 1
 popd
 
