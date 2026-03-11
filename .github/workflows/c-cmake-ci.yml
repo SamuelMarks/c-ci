@@ -281,10 +281,18 @@ jobs:
 
           # Dependency Provider (VCPKG)
           if [ "${{ matrix.deps }}" = "VCPKG" ]; then
+            TOOLCHAIN_FILE=""
             if [ -n "$VCPKG_INSTALLATION_ROOT" ]; then
-              CMAKE_EXTRA_ARGS+=("-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake")
+              TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
             elif [ -n "$VCPKG_ROOT" ]; then
-              CMAKE_EXTRA_ARGS+=("-DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake")
+              TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+            fi
+            
+            if [ -n "$TOOLCHAIN_FILE" ]; then
+              if [ "${{ matrix.compiler }}" = "cygwin" ] && command -v cygpath >/dev/null 2>&1; then
+                TOOLCHAIN_FILE=$(cygpath -u "$TOOLCHAIN_FILE")
+              fi
+              CMAKE_EXTRA_ARGS+=("-DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_FILE")
             else
               echo "Warning: VCPKG_INSTALLATION_ROOT is not set, but VCPKG is requested. CMake will rely on system path."
             fi
@@ -308,19 +316,19 @@ jobs:
 
           # Execute CMake
           cmake -B build -S . \
-            -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} \
-            -DBUILD_SHARED_LIBS=${{ matrix.shared }} \
-            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ matrix.lto }} \
-            -DCDD_CHARSET=${{ matrix.charset }} \
-            -DCDD_THREADING=${{ matrix.thread }} \
-            -DCDD_DEPS=${{ matrix.deps }} \
-            -DCDD_MSVC_RTC=${{ matrix.rtc }} \
-            -DCMAKE_MSVC_RUNTIME_LIBRARY=${{ matrix.crt }} \
+            "-DCMAKE_BUILD_TYPE=${{ inputs.build_type }}" \
+            "-DBUILD_SHARED_LIBS=${{ matrix.shared }}" \
+            "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ matrix.lto }}" \
+            "-DCDD_CHARSET=${{ matrix.charset }}" \
+            "-DCDD_THREADING=${{ matrix.thread }}" \
+            "-DCDD_DEPS=${{ matrix.deps }}" \
+            "-DCDD_MSVC_RTC=${{ matrix.rtc }}" \
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=${{ matrix.crt }}" \
             "${CMAKE_EXTRA_ARGS[@]}"
 
       - name: Build
-        run: cmake --build build --config ${{ inputs.build_type }} --parallel 4
+        run: cmake --build build --config "${{ inputs.build_type }}" --parallel 4
 
       - name: Run Tests
         working-directory: build
-        run: ctest -C ${{ inputs.build_type }} --output-on-failure
+        run: ctest -C "${{ inputs.build_type }}" --output-on-failure
