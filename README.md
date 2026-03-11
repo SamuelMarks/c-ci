@@ -1,5 +1,7 @@
-Reusable GitHub Actions for C Projects
-======================================
+Local CI scripts and GitHub Actions for building & testing C projects
+=====================================================================
+
+[![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-blue.svg)](http://creativecommons.org/publicdomain/zero/1.0/)
 
 This repository hosts a robust, highly optimized, and shared GitHub Actions workflow designed exclusively for C projects in the CDD ecosystem (e.g., `c-orm`, `c-multiplatform`, `c-abstract-http`, `cdd-c`, and new projects).
 
@@ -20,7 +22,7 @@ By centralizing the CI pipeline here, all CDD projects automatically benefit fro
 
 ## 🚀 How to Use in Your Project
 
-Can I just push this up and start using it? **Yes!** Once this repository (`c-ghactions`) is pushed publicly to GitHub, any repository (public or private) can invoke it. There is nothing "fancy" you have to configure in GitHub's settings as long as standard GitHub-hosted runners are enabled.
+Can I just push this up and start using it? **Yes!** Once this repository (`c-ci`) is pushed publicly to GitHub, any repository (public or private) can invoke it. There is nothing "fancy" you have to configure in GitHub's settings as long as standard GitHub-hosted runners are enabled.
 
 Create `.github/workflows/ci.yml` in your target repository (e.g., `c-orm`) with the following code:
 
@@ -35,7 +37,7 @@ on:
 
 jobs:
   build:
-    uses: SamuelMarks/c-ghactions/.github/workflows/c-cmake-ci.yml@master
+    uses: SamuelMarks/c-ci/.github/workflows/c-cmake-ci.yml@master
     with:
       # Optional: Change default build type here
       build_type: 'Release'
