@@ -308,6 +308,12 @@ jobs:
             CMAKE_EXTRA_ARGS+=("-G" "MinGW Makefiles")
           fi
 
+          # MinGW & Cygwin specific flags for C99 math functions
+          if [ "${{ matrix.compiler }}" = "mingw" ] || [ "${{ matrix.compiler }}" = "cygwin" ]; then
+            CMAKE_EXTRA_ARGS+=("-DCMAKE_C_FLAGS=-D_GNU_SOURCE")
+            CMAKE_EXTRA_ARGS+=("-DCMAKE_CXX_FLAGS=-D_GNU_SOURCE")
+          fi
+
           # Clang Compiler Overrides (Linux)
           if [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ runner.os }}" = "Linux" ]; then
             export CC=clang
@@ -332,9 +338,11 @@ jobs:
             "${CMAKE_EXTRA_ARGS[@]}"
 
       - name: Build
+        shell: bash
         run: cmake --build build --config "${{ inputs.build_type }}" --parallel 4
 
       - name: Run Tests
+        shell: bash
         working-directory: build
         run: ctest -C "${{ inputs.build_type }}" --output-on-failure
 
