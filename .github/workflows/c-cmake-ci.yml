@@ -316,6 +316,11 @@ jobs:
 
           # Execute CMake
           cmake -B build -S . \
+                      "-DC_CDD_BUILD_TESTING=ON" \
+            "-DC_ORM_BUILD_TESTING=ON" \
+            "-DC_ABSTRACT_HTTP_BUILD_TESTING=ON" \
+            "-DC_FS_BUILD_TESTING=ON" \
+            "-DBUILD_TESTING=ON" \
             "-DCMAKE_BUILD_TYPE=${{ inputs.build_type }}" \
             "-DBUILD_SHARED_LIBS=${{ matrix.shared }}" \
             "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ matrix.lto }}" \

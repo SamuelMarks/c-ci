@@ -17,7 +17,7 @@ echo ======================================================================
 echo Win MSVC 2005 ^| Static Lib (MTd) ^| ANSI ^| LTO OFF ^| Multi-thread ^| System ^| RTCs
 echo ======================================================================
 set "BUILD_DIR=%CD%\build_msvc2005_static"
-cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "NMake Makefiles" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCDD_CHARSET=ANSI -DCDD_THREADING=ON -DCDD_DEPS=SYSTEM -DCDD_MSVC_RTC=RTCs -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
+cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "NMake Makefiles" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCDD_CHARSET=ANSI -DCDD_THREADING=ON -DCDD_DEPS=SYSTEM -DC_CDD_BUILD_TESTING=ON -DC_ORM_BUILD_TESTING=ON -DC_ABSTRACT_HTTP_BUILD_TESTING=ON -DC_FS_BUILD_TESTING=ON -DBUILD_TESTING=ON -DCDD_MSVC_RTC=RTCs -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
 if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%"
 if errorlevel 1 exit /b 1

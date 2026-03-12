@@ -9,7 +9,7 @@ echo ======================================================================
 echo Win Cygwin ^| Static Lib ^| Unicode ^| Single-thread ^| LTO OFF ^| FetchContent
 echo ======================================================================
 set "BUILD_DIR=%CD%\build_cygwin_static"
-cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCDD_CHARSET=UNICODE -DCDD_THREADING=OFF -DCDD_DEPS=FETCHCONTENT -DCDD_MSVC_RTC=OFF
+cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCDD_CHARSET=UNICODE -DCDD_THREADING=OFF -DCDD_DEPS=FETCHCONTENT -DC_CDD_BUILD_TESTING=ON -DC_ORM_BUILD_TESTING=ON -DC_ABSTRACT_HTTP_BUILD_TESTING=ON -DC_FS_BUILD_TESTING=ON -DBUILD_TESTING=ON -DCDD_MSVC_RTC=OFF
 if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%" --parallel 4
 if errorlevel 1 exit /b 1
