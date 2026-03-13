@@ -331,8 +331,8 @@ jobs:
 
           # MinGW & Cygwin specific flags for C99 math functions
           if [ "${{ matrix.compiler }}" = "mingw" ] || [ "${{ matrix.compiler }}" = "cygwin" ]; then
-            CMAKE_EXTRA_ARGS+=("-DCMAKE_C_FLAGS=-D_GNU_SOURCE")
-            CMAKE_EXTRA_ARGS+=("-DCMAKE_CXX_FLAGS=-D_GNU_SOURCE")
+            CMAKE_EXTRA_ARGS+=("-DCMAKE_C_FLAGS_INIT=-D_GNU_SOURCE")
+            CMAKE_EXTRA_ARGS+=("-DCMAKE_CXX_FLAGS_INIT=-D_GNU_SOURCE")
           fi
 
           # Clang Compiler Overrides (Linux)
@@ -349,7 +349,7 @@ jobs:
             fi
             # Uppercase and replace hyphens with underscores
             PROJ_NAME_UPPER=$(echo "$PROJ_NAME" | tr 'a-z' 'A-Z' | tr '-' '_')
-            CMAKE_EXTRA_ARGS+=("-D${PROJ_NAME_UPPER}_TESTING=ON")
+            CMAKE_EXTRA_ARGS+=("-D${PROJ_NAME_UPPER}_BUILD_TESTING=ON" "-DBUILD_TESTING=ON")
           fi
 
           # Execute CMake
