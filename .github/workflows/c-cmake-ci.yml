@@ -75,7 +75,7 @@ jobs:
           - name: Win MSVC 2022 | Shared Lib (MTd) | ANSI | LTO OFF | Single-thread | FetchContent | RTCs
             os: windows-2022
             compiler: msvc
-            msvc_version: 2022
+            msvc_version: "2022"
             crt: MultiThreadedDebug
             charset: ANSI
             shared: "ON"
@@ -250,12 +250,12 @@ jobs:
         if: matrix.compiler == 'cygwin'
         uses: cygwin/cygwin-install-action@v6
         with:
-          packages: cmake,gcc-core,gcc-g++,make,dos2unix
-
-      - name: Configure Cygwin bash to ignore CR
-        if: matrix.compiler == 'cygwin'
-        shell: pwsh
-        run: Add-Content -Path $env:GITHUB_ENV -Value "SHELLOPTS=igncr",libsqlite3-devel
+          packages: |
+            cmake
+            gcc-core
+            gcc-g++
+            make
+            dos2unix
 
       - name: Configure Cygwin bash to ignore CR
         if: matrix.compiler == 'cygwin'
