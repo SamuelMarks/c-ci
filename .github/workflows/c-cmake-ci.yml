@@ -307,9 +307,9 @@ jobs:
           # Cygwin Compiler Overrides
           if [ "${{ matrix.compiler }}" = "cygwin" ]; then
             # Ensure we use Cygwin's absolute tool paths instead of accidentally picking up MSYS or Windows native tools
-            CYG_CC=$(cygpath -m "$(command -v gcc)")
-            CYG_CXX=$(cygpath -m "$(command -v g++)")
-            CYG_MAKE=$(cygpath -m "$(command -v make)")
+            CYG_CC=$(cygpath -u "$(command -v gcc)")
+            CYG_CXX=$(cygpath -u "$(command -v g++)")
+            CYG_MAKE=$(cygpath -u "$(command -v make)")
             export CC="$CYG_CC"
             export CXX="$CYG_CXX"
             CMAKE_EXTRA_ARGS+=("-DCMAKE_C_COMPILER=$CYG_CC")
@@ -379,8 +379,7 @@ jobs:
             "-DCDD_DEPS=${{ matrix.deps }}" \
             "-DCDD_MSVC_RTC=${{ matrix.rtc }}" \
             "-DCMAKE_MSVC_RUNTIME_LIBRARY=${{ matrix.crt }}" \
-            "${CMAKE_EXTRA_ARGS[@]}" \
-            ${{ inputs.cmake_configure_flags }}
+            "${CMAKE_EXTRA_ARGS[@]}" ${{ inputs.cmake_configure_flags }}
           EOF
           
           chmod +x ./run_configure.sh
