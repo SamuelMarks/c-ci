@@ -296,8 +296,10 @@ jobs:
         uses: egor-tensin/setup-mingw@v3
 
       - name: Configure CMake
-        shell: ${{ matrix.compiler == 'cygwin' && 'C:/cygwin/bin/bash.exe --login -o igncr {0}' || 'bash' }}
+        shell: bash
         run: |
+          cat << 'EOF' > run_configure.sh
+          set -e
           CMAKE_EXTRA_ARGS=()
 
           # Cygwin Compiler Overrides
@@ -377,13 +379,40 @@ jobs:
             "-DCMAKE_MSVC_RUNTIME_LIBRARY=${{ matrix.crt }}" \
             "${CMAKE_EXTRA_ARGS[@]}" \
             ${{ inputs.cmake_configure_flags }}
+          EOF
+          
+          if [ "${{ matrix.compiler }}" = "cygwin" ]; then
+            C:/cygwin/bin/bash.exe --login -o igncr -c 'cd "$(cygpath -u "$GITHUB_WORKSPACE")"; ./run_configure.sh'
+          else
+            bash ./run_configure.sh
+          fi
 
       - name: Build
-        shell: ${{ matrix.compiler == 'cygwin' && 'C:/cygwin/bin/bash.exe --login -o igncr {0}' || 'bash' }}
-        run: cmake --build build --config "${{ inputs.build_type }}" --parallel 4 ${{ inputs.cmake_build_flags }}
+        shell: bash
+        run: |
+          cat << 'EOF' > run_build.sh
+          set -e
+          cmake --build build --config "${{ inputs.build_type }}" --parallel 4 ${{ inputs.cmake_build_flags }}
+          EOF
+          
+          if [ "${{ matrix.compiler }}" = "cygwin" ]; then
+            C:/cygwin/bin/bash.exe --login -o igncr -c 'cd "$(cygpath -u "$GITHUB_WORKSPACE")"; ./run_build.sh'
+          else
+            bash ./run_build.sh
+          fi
 
       - name: Run Tests
-        shell: ${{ matrix.compiler == 'cygwin' && 'C:/cygwin/bin/bash.exe --login -o igncr {0}' || 'bash' }}
+        shell: bash
         working-directory: build
-        run: ctest -C "${{ inputs.build_type }}" --output-on-failure
+        run: |
+          cat << 'EOF' > run_tests.sh
+          set -e
+          ctest -C "${{ inputs.build_type }}" --output-on-failure
+          EOF
+          
+          if [ "${{ matrix.compiler }}" = "cygwin" ]; then
+            C:/cygwin/bin/bash.exe --login -o igncr -c 'cd "$(cygpath -u "$GITHUB_WORKSPACE/build")"; ./run_tests.sh'
+          else
+            bash ./run_tests.sh
+          fi
 
