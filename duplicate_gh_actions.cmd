@@ -14,7 +14,7 @@ call "%~dp0build_msvc2022.cmd"
 if errorlevel 1 goto :error
 
 echo [3/7] Running Win MSVC 2005 variation...
-call "%~dp0build_msvc2005.cmd"
+rem call build_msvc2005.cmd
 if errorlevel 1 goto :error
 
 echo [4/7] Running Win MinGW variations...

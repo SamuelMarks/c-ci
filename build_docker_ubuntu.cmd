@@ -10,7 +10,7 @@ set IMAGE_NAME=!CWD_NAME!_ubuntu
 set CONTAINER_NAME=!CWD_NAME!_ubuntu_container
 
 echo Building image !IMAGE_NAME!...
-docker build -t !IMAGE_NAME! -f "!SRC_DIR!\ubuntu.Dockerfile" "!SRC_DIR!"
+docker build -t !IMAGE_NAME! -f "%~dp0ubuntu.Dockerfile" "!SRC_DIR!"
 set BUILD_ERR=!ERRORLEVEL!
 if !BUILD_ERR! neq 0 goto :cleanup
 
@@ -20,12 +20,12 @@ set "RUN_SCRIPT=!SRC_DIR!\.run_ubuntu_tests.sh"
 echo set -e
 echo export BUILD_TYPE="Debug"
 echo echo "Setting up VCPKG..."
-echo if [ ^^! -d "/workspace_build/vcpkg" ]; then
-echo   git clone --branch project0 https://github.com/offscale/vcpkg.git /workspace_build/vcpkg
-echo   /workspace_build/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+echo if [ ^^! -d "/vcpkg" ]; then
+echo   git clone --branch project0 https://github.com/offscale/vcpkg.git /vcpkg
+echo   /vcpkg/bootstrap-vcpkg.sh -disableMetrics
 echo fi
-echo export VCPKG_ROOT=/workspace_build/vcpkg
-echo export VCPKG_INSTALLATION_ROOT=/workspace_build/vcpkg
+echo export VCPKG_ROOT=/vcpkg
+echo export VCPKG_INSTALLATION_ROOT=/vcpkg
 echo.
 echo echo "======================================================================"
 echo echo "Linux GCC | Shared Lib | Unicode | Multi-thread | LTO OFF | Vcpkg"
@@ -69,7 +69,7 @@ echo cd /workspace_build
 ) > "!RUN_SCRIPT!"
 
 echo Running container !CONTAINER_NAME!...
-docker run --name !CONTAINER_NAME! -v "%CD%:/workspace_build" -v "!SRC_DIR!:/workspace_src" !IMAGE_NAME! bash /workspace_src/.run_ubuntu_tests.sh
+docker run --name !CONTAINER_NAME! -v "%CD%:/workspace_build" -v "!SRC_DIR!:/workspace_src" !IMAGE_NAME! bash -c "tr -d '\r' < /workspace_src/.run_ubuntu_tests.sh | bash"
 set RUN_ERR=!ERRORLEVEL!
 
 :cleanup

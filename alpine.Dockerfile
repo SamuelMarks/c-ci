@@ -2,9 +2,14 @@ FROM alpine:latest
 
 RUN apk add --no-cache \
     build-base \
+    bash \
     cmake \
     clang \
     curl \
+    zip \
+    perl \
+    unzip \
+    tar \
     curl-dev \
     git \
     pkgconf \
