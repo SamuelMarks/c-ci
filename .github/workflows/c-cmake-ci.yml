@@ -257,6 +257,8 @@ jobs:
             make
             dos2unix
             libssl-devel
+            doxygen
+            graphviz
 
       - name: Configure Cygwin bash to ignore CR
         if: matrix.compiler == 'cygwin'
