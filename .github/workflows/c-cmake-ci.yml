@@ -256,6 +256,7 @@ jobs:
             gcc-g++
             make
             dos2unix
+            libssl-devel
 
       - name: Configure Cygwin bash to ignore CR
         if: matrix.compiler == 'cygwin'
@@ -283,7 +284,7 @@ jobs:
             if command -v dos2unix &> /dev/null; then
               find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' -o -name '*.cmake' -o -name 'CMakeLists.txt' \) -exec dos2unix {} + || true
             else
-              echo "dos2unix not found, skipping..."
+              if [ -x "/c/cygwin/bin/dos2unix.exe" ]; then find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' -o -name '*.cmake' -o -name 'CMakeLists.txt' \) -exec /c/cygwin/bin/dos2unix.exe {} + || true; else echo "dos2unix not found, skipping..."; fi
             fi
           fi
 
@@ -342,6 +343,11 @@ jobs:
           # MinGW Generator
           if [ "${{ matrix.compiler }}" = "mingw" ]; then
             CMAKE_EXTRA_ARGS+=("-G" "MinGW Makefiles")
+          fi
+
+          # Cygwin Generator
+          if [ "${{ matrix.compiler }}" = "cygwin" ]; then
+            CMAKE_EXTRA_ARGS+=("-G" "Unix Makefiles")
           fi
 
           # MinGW & Cygwin specific flags for C99 math functions
