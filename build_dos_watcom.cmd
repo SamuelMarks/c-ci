@@ -19,7 +19,7 @@ echo DOS OpenWatcom ^| Static Lib ^| ANSI
 echo ======================================================================
 set "BUILD_DIR=%CD%\build_dos_watcom"
 
-cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "Watcom WMake" -DCMAKE_SYSTEM_NAME=DOS -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=ON
+cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "Watcom WMake" -DCMAKE_SYSTEM_NAME=DOS -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=ON %*
 if errorlevel 1 exit /b 1
 
 cmake --build "%BUILD_DIR%"

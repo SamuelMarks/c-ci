@@ -52,7 +52,7 @@ jobs:
       # Optional: Override the project name used for the auto test flag (defaults to repo name)
       project_name: 'C_ORM'
 
-      # Optional: Disable the automatic injection of -D<PROJECT_NAME>_TESTING=ON
+      # Optional: Disable the automatic injection of -D<PROJECT_NAME>_BUILD_TESTING=ON
       auto_test_flag: true
 ```
 
@@ -67,6 +67,11 @@ You can run the major GitHub Actions variations directly on your Windows develop
 *   **`duplicate_gh_actions.cmd`:** Runs the full suite sequentially, simulating the GitHub Actions matrix for MSVC (2026, 2022, 2005), MinGW, Cygwin, Ubuntu (via Docker), and Alpine (via Docker).
 *   **`build_all_parallel.ps1`:** Runs the same builds in parallel using PowerShell jobs for drastically reduced local test times.
 *   **`build_all.cmd` / `build_all_serial.cmd`:** Alternative entry points for sequential batch testing.
+
+### Passing Extra Arguments to Local Scripts
+All local build scripts now accept extra arguments that are passed directly to the underlying `cmake -S` configuration step.
+*   **Windows (`.cmd`):** `build_msvc2026.cmd -DMY_CUSTOM_FLAG=ON`
+*   **macOS/Linux (`.sh`):** `./build_macos.sh -DMY_CUSTOM_FLAG=ON`
 
 ### Individual Build Scripts
 You can run specific environments directly if you are investigating a targeted issue:
@@ -87,7 +92,7 @@ The magic of this reusable workflow lies in **cache variable injection**. For yo
 
 | CMake Variable | Possible Values | Description |
 | :--- | :--- | :--- |
-| `<PROJECT_NAME>_TESTING`| `ON` | Automatically injected if `auto_test_flag` is true. The prefix is derived from the `project_name` input or the GitHub repository name (uppercased, hyphens replaced with underscores). |
+| `<PROJECT_NAME>_BUILD_TESTING`| `ON` | Automatically injected if `auto_test_flag` is true. The prefix is derived from the `project_name` input or the GitHub repository name (uppercased, hyphens replaced with underscores). |
 | `BUILD_SHARED_LIBS` | `ON`, `OFF` | Native CMake variable. Determines if `add_library` produces shared or static libraries. |
 | `CMAKE_INTERPROCEDURAL_OPTIMIZATION`| `ON`, `OFF` | Native CMake variable for Link-Time Optimization (LTO). |
 | `CMAKE_MSVC_RUNTIME_LIBRARY` | `MultiThreaded...`| Native CMake variable. Toggles `/MT`, `/MD`, `/MTd`, `/MDd`. |

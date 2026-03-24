@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y \
     perl \
     unzip \
     tar \
+    bison \
+    flex \
     libcurl4-openssl-dev \
     git \
     pkg-config \

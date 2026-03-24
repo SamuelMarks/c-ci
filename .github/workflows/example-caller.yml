@@ -13,4 +13,4 @@ jobs:
     uses: ./.github/workflows/c-cmake-ci.yml
     with:
       build_type: 'Release'
-      cmake_configure_flags: '-DC_CDD_BUILD_TESTING=ON -DC_ORM_BUILD_TESTING=ON -DC_ABSTRACT_HTTP_BUILD_TESTING=ON -DC_FS_BUILD_TESTING=ON -DBUILD_TESTING=ON'
+      cmake_configure_flags: '-DBUILD_TESTING=ON'
