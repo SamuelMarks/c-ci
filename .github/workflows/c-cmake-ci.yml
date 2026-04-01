@@ -23,6 +23,22 @@ on:
         description: 'Automatically add -D<PROJECT_NAME>_TESTING=ON (derived from project_name or repo name)'
         default: true
         type: boolean
+      extra_apt_packages:
+        description: 'Space-separated list of extra apt packages to install'
+        default: ''
+        type: string
+      extra_brew_packages:
+        description: 'Space-separated list of extra brew packages to install'
+        default: ''
+        type: string
+      extra_winget_packages:
+        description: 'Space-separated list of extra winget packages to install'
+        default: ''
+        type: string
+      extra_cygwin_packages:
+        description: 'Newline-separated list of extra cygwin packages to install'
+        default: ''
+        type: string
 
 jobs:
   build-and-test:
@@ -239,6 +255,15 @@ jobs:
             ./vcpkg/bootstrap-vcpkg.sh
           fi
 
+
+      - name: Install Extra Winget Packages
+        if: runner.os == 'Windows' && inputs.extra_winget_packages != ''
+        shell: pwsh
+        run: |
+          foreach ($pkg in "${{ inputs.extra_winget_packages }}".Split(" ")) {
+            if ($pkg) { winget install --silent --accept-package-agreements --accept-source-agreements $pkg }
+          }
+
       - name: Set vcpkg environment variables
         if: matrix.deps == 'VCPKG'
         shell: bash
@@ -259,20 +284,21 @@ jobs:
             libssl-devel
             doxygen
             graphviz
+            ${{ inputs.extra_cygwin_packages }}
 
       - name: Configure Cygwin bash to ignore CR
         if: matrix.compiler == 'cygwin'
         shell: pwsh
         run: Add-Content -Path $env:GITHUB_ENV -Value "SHELLOPTS=igncr"
 
-      - name: Install Line Ending Tools (Linux/macOS)
+      - name: Install Dependencies (Linux/macOS)
         if: runner.os == 'Linux' || runner.os == 'macOS'
         shell: bash
         run: |
           if [ "${{ runner.os }}" = "Linux" ]; then
-            sudo apt-get update && sudo apt-get install -y dos2unix libsqlite3-dev
+            sudo apt-get update && sudo apt-get install -y dos2unix libsqlite3-dev ${{ inputs.extra_apt_packages }}
           elif [ "${{ runner.os }}" = "macOS" ]; then
-            brew install dos2unix sqlite
+            brew install dos2unix sqlite ${{ inputs.extra_brew_packages }}
           fi
 
       - name: Convert Line Endings
