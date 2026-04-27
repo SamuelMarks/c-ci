@@ -14,3 +14,10 @@ jobs:
     with:
       build_type: 'Release'
       cmake_configure_flags: '-DBUILD_TESTING=ON'
+      disable_env_inheritance: true
+      # Example of passing arbitrary environment variables
+      env_vars: ${{ toJson(env) }}
+    env:
+      # These will be correctly injected as environment variables
+      GIT_CONFIG_PARAMETERS: "'init.defaultBranch=main'"
+      MY_CUSTOM_VAR: "Hello World"

@@ -54,6 +54,17 @@ jobs:
 
       # Optional: Disable the automatic injection of -D<PROJECT_NAME>_BUILD_TESTING=ON
       auto_test_flag: true
+
+      # Optional: Disable environment variable inheritance for CMake/CTest
+      disable_env_inheritance: true
+
+      # Optional: Inject arbitrary environment variables into the job via JSON
+      env_vars: ${{ toJson(env) }}
+
+    env:
+      # These will be automatically converted to JSON and injected via env_vars
+      GIT_CONFIG_PARAMETERS: "'init.defaultBranch=main'"
+      MY_CUSTOM_VAR: "Hello World"
 ```
 
 ---

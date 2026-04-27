@@ -39,6 +39,14 @@ on:
         description: 'Newline-separated list of extra cygwin packages to install'
         default: ''
         type: string
+      env_vars:
+        description: 'JSON object of arbitrary environment variables to set for the job'
+        default: '{}'
+        type: string
+      disable_env_inheritance:
+        description: 'Disable environment inheritance for CMake and CTest (uses cmake -E env --ignore-environ)'
+        default: false
+        type: boolean
 
 jobs:
   build-and-test:
@@ -226,6 +234,30 @@ jobs:
             rtc: "OFF"
 
     steps:
+      - name: Inject Custom Environment Variables
+        if: inputs.env_vars != '' && inputs.env_vars != '{}'
+        shell: bash
+        run: |
+          echo "Injecting custom environment variables..."
+          # Write the JSON payload to a temporary file
+          cat << 'EOF' > env_vars.json
+          ${{ inputs.env_vars }}
+          EOF
+          
+          # Parse the JSON and append to GITHUB_ENV
+          # jq -r to strip quotes and format as KEY=VALUE
+          if command -v jq >/dev/null 2>&1; then
+            jq -r 'to_entries | .[] | "\(.key)=\(.value)"' env_vars.json >> "$GITHUB_ENV"
+          elif command -v python3 >/dev/null 2>&1; then
+            python3 -c "import json, sys; d = json.load(open('env_vars.json')); [print(f'{k}={v}') for k, v in d.items()]" >> "$GITHUB_ENV"
+          elif command -v python >/dev/null 2>&1; then
+            python -c "import json, sys; d = json.load(open('env_vars.json')); [print(f'{k}={v}') for k, v in d.items()]" >> "$GITHUB_ENV"
+          else
+            echo "Error: Neither jq nor python is available to parse env_vars JSON."
+            exit 1
+          fi
+          rm env_vars.json
+
       - name: Checkout Code
         uses: actions/checkout@v6
 
@@ -401,17 +433,43 @@ jobs:
             CMAKE_EXTRA_ARGS+=("-D${PROJ_NAME_UPPER}_BUILD_TESTING=ON" "-DBUILD_TESTING=ON")
           fi
 
+          CMAKE_ENV_ARGS=()
+          if [ "${{ inputs.disable_env_inheritance }}" = "true" ]; then
+            CMAKE_ENV_ARGS+=("--ignore-environ")
+            # Preserve critical paths
+            CMAKE_ENV_ARGS+=("PATH=$PATH")
+            if [ -n "$INCLUDE" ]; then CMAKE_ENV_ARGS+=("INCLUDE=$INCLUDE"); fi
+            if [ -n "$LIB" ]; then CMAKE_ENV_ARGS+=("LIB=$LIB"); fi
+            if [ -n "$LIBPATH" ]; then CMAKE_ENV_ARGS+=("LIBPATH=$LIBPATH"); fi
+            if [ -n "$TEMP" ]; then CMAKE_ENV_ARGS+=("TEMP=$TEMP"); fi
+            if [ -n "$TMP" ]; then CMAKE_ENV_ARGS+=("TMP=$TMP"); fi
+            if [ -n "$HOME" ]; then CMAKE_ENV_ARGS+=("HOME=$HOME"); fi
+          fi
+
           # Execute CMake
-          cmake -B build -S . \
-            "-DCMAKE_BUILD_TYPE=${{ inputs.build_type }}" \
-            "-DBUILD_SHARED_LIBS=${{ matrix.shared }}" \
-            "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ matrix.lto }}" \
-            "-DCDD_CHARSET=${{ matrix.charset }}" \
-            "-DCDD_THREADING=${{ matrix.thread }}" \
-            "-DCDD_DEPS=${{ matrix.deps }}" \
-            "-DCDD_MSVC_RTC=${{ matrix.rtc }}" \
-            "-DCMAKE_MSVC_RUNTIME_LIBRARY=${{ matrix.crt }}" \
-            "${CMAKE_EXTRA_ARGS[@]}" ${{ inputs.cmake_configure_flags }}
+          if [ ${#CMAKE_ENV_ARGS[@]} -gt 0 ]; then
+            cmake -E env "${CMAKE_ENV_ARGS[@]}" cmake -B build -S . \
+              "-DCMAKE_BUILD_TYPE=${{ inputs.build_type }}" \
+              "-DBUILD_SHARED_LIBS=${{ matrix.shared }}" \
+              "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ matrix.lto }}" \
+              "-DCDD_CHARSET=${{ matrix.charset }}" \
+              "-DCDD_THREADING=${{ matrix.thread }}" \
+              "-DCDD_DEPS=${{ matrix.deps }}" \
+              "-DCDD_MSVC_RTC=${{ matrix.rtc }}" \
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=${{ matrix.crt }}" \
+              "${CMAKE_EXTRA_ARGS[@]}" ${{ inputs.cmake_configure_flags }}
+          else
+            cmake -B build -S . \
+              "-DCMAKE_BUILD_TYPE=${{ inputs.build_type }}" \
+              "-DBUILD_SHARED_LIBS=${{ matrix.shared }}" \
+              "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ matrix.lto }}" \
+              "-DCDD_CHARSET=${{ matrix.charset }}" \
+              "-DCDD_THREADING=${{ matrix.thread }}" \
+              "-DCDD_DEPS=${{ matrix.deps }}" \
+              "-DCDD_MSVC_RTC=${{ matrix.rtc }}" \
+              "-DCMAKE_MSVC_RUNTIME_LIBRARY=${{ matrix.crt }}" \
+              "${CMAKE_EXTRA_ARGS[@]}" ${{ inputs.cmake_configure_flags }}
+          fi
           EOF
           
           chmod +x ./run_configure.sh
@@ -427,7 +485,23 @@ jobs:
         run: |
           cat << 'EOF' > run_build.sh
           set -e
-          cmake --build build --config "${{ inputs.build_type }}" --parallel 4 ${{ inputs.cmake_build_flags }}
+          CMAKE_ENV_ARGS=()
+          if [ "${{ inputs.disable_env_inheritance }}" = "true" ]; then
+            CMAKE_ENV_ARGS+=("--ignore-environ")
+            CMAKE_ENV_ARGS+=("PATH=$PATH")
+            if [ -n "$INCLUDE" ]; then CMAKE_ENV_ARGS+=("INCLUDE=$INCLUDE"); fi
+            if [ -n "$LIB" ]; then CMAKE_ENV_ARGS+=("LIB=$LIB"); fi
+            if [ -n "$LIBPATH" ]; then CMAKE_ENV_ARGS+=("LIBPATH=$LIBPATH"); fi
+            if [ -n "$TEMP" ]; then CMAKE_ENV_ARGS+=("TEMP=$TEMP"); fi
+            if [ -n "$TMP" ]; then CMAKE_ENV_ARGS+=("TMP=$TMP"); fi
+            if [ -n "$HOME" ]; then CMAKE_ENV_ARGS+=("HOME=$HOME"); fi
+          fi
+
+          if [ ${#CMAKE_ENV_ARGS[@]} -gt 0 ]; then
+            cmake -E env "${CMAKE_ENV_ARGS[@]}" cmake --build build --config "${{ inputs.build_type }}" --parallel 4 ${{ inputs.cmake_build_flags }}
+          else
+            cmake --build build --config "${{ inputs.build_type }}" --parallel 4 ${{ inputs.cmake_build_flags }}
+          fi
           EOF
           
           chmod +x ./run_build.sh
@@ -444,7 +518,23 @@ jobs:
         run: |
           cat << 'EOF' > run_tests.sh
           set -e
-          ctest -C "${{ inputs.build_type }}" --output-on-failure
+          CMAKE_ENV_ARGS=()
+          if [ "${{ inputs.disable_env_inheritance }}" = "true" ]; then
+            CMAKE_ENV_ARGS+=("--ignore-environ")
+            CMAKE_ENV_ARGS+=("PATH=$PATH")
+            if [ -n "$INCLUDE" ]; then CMAKE_ENV_ARGS+=("INCLUDE=$INCLUDE"); fi
+            if [ -n "$LIB" ]; then CMAKE_ENV_ARGS+=("LIB=$LIB"); fi
+            if [ -n "$LIBPATH" ]; then CMAKE_ENV_ARGS+=("LIBPATH=$LIBPATH"); fi
+            if [ -n "$TEMP" ]; then CMAKE_ENV_ARGS+=("TEMP=$TEMP"); fi
+            if [ -n "$TMP" ]; then CMAKE_ENV_ARGS+=("TMP=$TMP"); fi
+            if [ -n "$HOME" ]; then CMAKE_ENV_ARGS+=("HOME=$HOME"); fi
+          fi
+
+          if [ ${#CMAKE_ENV_ARGS[@]} -gt 0 ]; then
+            cmake -E env "${CMAKE_ENV_ARGS[@]}" ctest -C "${{ inputs.build_type }}" --output-on-failure
+          else
+            ctest -C "${{ inputs.build_type }}" --output-on-failure
+          fi
           EOF
           
           chmod +x ./run_tests.sh
