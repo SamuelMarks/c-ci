@@ -61,7 +61,7 @@ jobs:
           # WINDOWS - MSVC Latest (2026 / 2022)
           # ==========================================
           - name: Win MSVC Latest | Shared Lib (MD) | Unicode | LTO OFF | Multi-thread | FetchContent
-            os: windows-latest
+            os: windows-2025-vs2026
             compiler: msvc
             msvc_version: latest
             crt: MultiThreadedDLL
@@ -73,7 +73,7 @@ jobs:
             rtc: "OFF"
 
           - name: Win MSVC Latest | Static Lib (MT) | ANSI | LTO ON | Single-thread | Vcpkg | RTC1
-            os: windows-latest
+            os: windows-2025-vs2026
             compiler: msvc
             msvc_version: latest
             crt: MultiThreaded
@@ -85,7 +85,7 @@ jobs:
             rtc: "RTC1"
 
           - name: Win MSVC Latest | Static Lib (MDd) | Unicode | LTO OFF | Multi-thread | System | RTCu
-            os: windows-latest
+            os: windows-2025-vs2026
             compiler: msvc
             msvc_version: latest
             crt: MultiThreadedDebugDLL
@@ -129,7 +129,7 @@ jobs:
           # WINDOWS - MinGW & Cygwin
           # ==========================================
           - name: Win MinGW | Shared Lib | ANSI | Multi-thread | LTO OFF | System
-            os: windows-latest
+            os: windows-2025-vs2026
             compiler: mingw
             crt: ""
             charset: ANSI
@@ -140,7 +140,7 @@ jobs:
             rtc: "OFF"
 
           - name: Win MinGW | Static Lib | Unicode | Single-thread | LTO ON | FetchContent
-            os: windows-latest
+            os: windows-2025-vs2026
             compiler: mingw
             crt: ""
             charset: UNICODE
@@ -151,7 +151,7 @@ jobs:
             rtc: "OFF"
 
           - name: Win Cygwin | Static Lib | Unicode | Single-thread | LTO OFF | FetchContent
-            os: windows-latest
+            os: windows-2025-vs2026
             compiler: cygwin
             crt: ""
             charset: UNICODE
