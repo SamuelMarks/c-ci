@@ -1,11 +1,26 @@
-Local CI scripts and GitHub Actions for building & testing C projects
-=====================================================================
+c-ci: Local CI scripts and GitHub Actions for building & testing C projects
+===========================================================================
 
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-blue.svg)](http://creativecommons.org/publicdomain/zero/1.0/)
 
 This repository hosts a robust, highly optimized, and shared GitHub Actions workflow designed exclusively for C projects in the CDD ecosystem (e.g., `c-orm`, `c-multiplatform`, `c-abstract-http`, `cdd-c`, and new projects).
 
 By centralizing the CI pipeline here, all CDD projects automatically benefit from extensive, cross-platform build matrices without duplicating massive `.yml` configurations or wrangling complex environments.
+
+## 🌍 Projects using c-ci
+
+This is public for anyone to use. Here's where I use it:
+
+| Name | Description | CI shield |
+| :--- | :--- | :--- |
+| [c-abstract-http](https://github.com/SamuelMarks/c-abstract-http) | HTTP/HTTPS client interface reusing abstractions for Windows (WinHTTP,WinINet), macOS (CommonCrypto), iOS, Android, GTK+4 (libsoup), with fallback to libcurl | [![CI](https://github.com/SamuelMarks/c-abstract-http/actions/workflows/ci.yml/badge.svg)](https://github.com/SamuelMarks/c-abstract-http/actions/workflows/ci.yml) |
+| [c-fs](https://github.com/SamuelMarks/c-fs) | std::filesystem inspired interface for C89 (MSVC2005, Cygwin, MSVC2026, Linux, macOS, etc.) | [![CI](https://github.com/SamuelMarks/c-fs/actions/workflows/ci.yml/badge.svg)](https://github.com/SamuelMarks/c-fs/actions/workflows/ci.yml) |
+| [c-multiplatform](https://github.com/SamuelMarks/c-multiplatform) | Cross platform GUI framework in ANSI C (C89), native for: Windows (GDI+); Linux (GTK+4); macOS (Cocoa); iOS; Android; web (WASM). Material 3. | [![CI](https://github.com/SamuelMarks/c-multiplatform/actions/workflows/ci.yml/badge.svg)](https://github.com/SamuelMarks/c-multiplatform/actions/workflows/ci.yml) |
+| [c-orm](https://github.com/SamuelMarks/c-orm) | (PostgreSQL, SQLite, MySQL) ORM for C. Alembic/diesel style schema migration support. VERY portable. | [![CI](https://github.com/SamuelMarks/c-orm/actions/workflows/ci.yml/badge.svg)](https://github.com/SamuelMarks/c-orm/actions/workflows/ci.yml) |
+| [c-rest-framework](https://github.com/SamuelMarks/c-rest-framework) | C REST Framework with builtin ORM (PostgreSQL, SQLite, MySQL) native on DOS, Cygwin, Windows, Linux, macOS, etc. | [![CI](https://github.com/SamuelMarks/c-rest-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/SamuelMarks/c-rest-framework/actions/workflows/ci.yml) |
+| [c-str-span](https://github.com/SamuelMarks/c-str-span) | UTF-8 replacement for C strings, supporting zero-copy use-cases (non-null-terminated). | [![CI](https://github.com/SamuelMarks/c-str-span/actions/workflows/ci.yml/badge.svg)](https://github.com/SamuelMarks/c-str-span/actions/workflows/ci.yml) |
+| [c89stringutils](https://github.com/offscale/c89stringutils) | string functions from newer standards / common non-standards for C89 | [![CI](https://github.com/offscale/c89stringutils/actions/workflows/ci.yml/badge.svg)](https://github.com/offscale/c89stringutils/actions/workflows/ci.yml) |
+| [cdd-c](https://github.com/SamuelMarks/cdd-c) | OpenAPI ↔ C. Frontend for C, concentrating on: generation from code; single-file analysis; modification; and emission (prettyprinting). | [![CI](https://github.com/SamuelMarks/cdd-c/actions/workflows/ci.yml/badge.svg)](https://github.com/SamuelMarks/cdd-c/actions/workflows/ci.yml) |
 
 ## 🌟 Key Features
 
