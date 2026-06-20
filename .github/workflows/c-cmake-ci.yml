@@ -23,6 +23,10 @@ on:
         description: 'Automatically add -D<PROJECT_NAME>_TESTING=ON (derived from project_name or repo name)'
         default: true
         type: boolean
+      run_valgrind:
+        description: 'Run ctest with valgrind (ctest -T memcheck) on Linux runners'
+        default: true
+        type: boolean
       extra_apt_packages:
         description: 'Space-separated list of extra apt packages to install'
         default: ''
@@ -292,8 +296,12 @@ jobs:
         if: runner.os == 'Windows' && inputs.extra_winget_packages != ''
         shell: pwsh
         run: |
-          foreach ($pkg in "${{ inputs.extra_winget_packages }}".Split(" ")) {
-            if ($pkg) { winget install --silent --accept-package-agreements --accept-source-agreements $pkg }
+          $packages = "${{ inputs.extra_winget_packages }}" -split "\s+" | Where-Object { $_ }
+          foreach ($pkg in $packages) {
+            $check = winget list --exact --id $pkg --accept-source-agreements 2>&1 | Out-String
+            if ($check -match "No installed package found" -or $LASTEXITCODE -ne 0) {
+              winget install --silent --accept-package-agreements --accept-source-agreements $pkg
+            }
           }
 
       - name: Set vcpkg environment variables
@@ -328,9 +336,30 @@ jobs:
         shell: bash
         run: |
           if [ "${{ runner.os }}" = "Linux" ]; then
-            sudo apt-get update && sudo apt-get install -y dos2unix libsqlite3-dev ${{ inputs.extra_apt_packages }}
+            pkgs="dos2unix libsqlite3-dev ${{ inputs.extra_apt_packages }}"
+            if [ "${{ inputs.run_valgrind }}" = "true" ]; then
+              pkgs="$pkgs valgrind"
+            fi
+            to_install=""
+            for pkg in $pkgs; do
+              if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "ok installed"; then
+                to_install="$to_install $pkg"
+              fi
+            done
+            if [ -n "$to_install" ]; then
+              sudo apt-get update && sudo apt-get install -y $to_install
+            fi
           elif [ "${{ runner.os }}" = "macOS" ]; then
-            brew install dos2unix sqlite ${{ inputs.extra_brew_packages }}
+            pkgs="dos2unix sqlite ${{ inputs.extra_brew_packages }}"
+            to_install=""
+            for pkg in $pkgs; do
+              if ! brew list --versions "$pkg" >/dev/null 2>&1; then
+                to_install="$to_install $pkg"
+              fi
+            done
+            if [ -n "$to_install" ]; then
+              brew install $to_install
+            fi
           fi
 
       - name: Convert Line Endings
@@ -532,8 +561,14 @@ jobs:
 
           if [ ${#CMAKE_ENV_ARGS[@]} -gt 0 ]; then
             cmake -E env "${CMAKE_ENV_ARGS[@]}" ctest -C "${{ inputs.build_type }}" --output-on-failure
+            if [ "${{ inputs.run_valgrind }}" = "true" ] && [ "${{ runner.os }}" = "Linux" ]; then
+              cmake -E env "${CMAKE_ENV_ARGS[@]}" ctest -T memcheck --output-on-failure
+            fi
           else
             ctest -C "${{ inputs.build_type }}" --output-on-failure
+            if [ "${{ inputs.run_valgrind }}" = "true" ] && [ "${{ runner.os }}" = "Linux" ]; then
+              ctest -T memcheck --output-on-failure
+            fi
           fi
           EOF
           

@@ -15,9 +15,12 @@ By centralizing the CI pipeline here, all CDD projects automatically benefit fro
     *   **Linux:** Ubuntu with GCC and Clang. *Alpine Linux (musl) is supported via local Docker scripts.*
     *   **macOS:** Apple Clang.
     *   **Legacy Systems:** DOS via OpenWatcom *(local build script only)*.
+*   **Valgrind Memory Checking:** Automatically run `ctest -T memcheck` with valgrind on Linux runners.
+*   **Custom Package Management:** Easily install extra dependencies per-platform using native package managers (`extra_apt_packages`, `extra_brew_packages`, `extra_winget_packages`, `extra_cygwin_packages`).
 *   **Target Linking:** Shared (`/MD`, `/MDd`) vs Static (`/MT`, `/MTd`) CRT linkage; Shared Library (`.dll`, `.so`, `.dylib`) vs Static Library (`.lib`, `.a`) output.
 *   **Build Modifiers:** Link-Time Optimization (LTO) on/off, Charset variations (`UNICODE` vs `ANSI`), MSVC Runtime Checks (`RTC1`, `RTCu`, `RTCs`), and Threading limits.
 *   **Cross-Platform Line Ending Safety:** Transparently converts source code using `unix2dos` and `dos2unix` depending on the compiler environment, preventing insidious compilation failures or macro breakage on MSVC vs GCC due to `\r\n` and `\n` discrepancies.
+*   **Environment Isolation:** Disable CI environment inheritance with `disable_env_inheritance` or inject arbitrary variables securely using `env_vars`.
 
 ---
 
@@ -54,6 +57,21 @@ jobs:
 
       # Optional: Disable the automatic injection of -D<PROJECT_NAME>_BUILD_TESTING=ON
       auto_test_flag: true
+
+      # Optional: Run ctest with valgrind (ctest -T memcheck) on Linux runners (default is true)
+      run_valgrind: true
+
+      # Optional: Install extra apt packages on Linux runners
+      extra_apt_packages: 'libsqlite3-dev'
+
+      # Optional: Install extra brew packages on macOS runners
+      extra_brew_packages: 'sqlite'
+
+      # Optional: Install extra winget packages on Windows runners
+      extra_winget_packages: 'Ninja'
+
+      # Optional: Install extra cygwin packages on Cygwin runners
+      extra_cygwin_packages: 'libsqlite3-devel'
 
       # Optional: Disable environment variable inheritance for CMake/CTest
       disable_env_inheritance: true

@@ -15,6 +15,7 @@ jobs:
       build_type: 'Release'
       cmake_configure_flags: '-DBUILD_TESTING=ON'
       disable_env_inheritance: true
+      run_valgrind: true
       # Example of passing arbitrary environment variables
       env_vars: ${{ toJson(env) }}
     env:
