@@ -90,6 +90,17 @@ def has_msvc():
     if os.name == 'nt' and is_tool("cl.exe"): return True
     return False
 
+def has_msvc_2005_wine():
+    """
+    Check if MSVC 2005 via Wine is available.
+
+    Returns:
+        bool: True if MSVC 2005 via Wine is available, False otherwise.
+    """
+    if os.name == 'nt': return False
+    msvc_2005_path = os.environ.get("MSVC_2005_PATH", "/media/samuel/OS1/Program Files (x86)/Microsoft Visual Studio 8")
+    return is_tool("wine") and os.path.exists(msvc_2005_path)
+
 def has_msvc_wine():
     """
     Check if MSVC via Wine is available on non-Windows platforms.
@@ -179,6 +190,18 @@ def main():
             env["CC"] = "clang"
             run_cmd(["cmake", "..", "-DCMAKE_BUILD_TYPE=Release", "-DBUILD_TESTING=ON"], cwd=build_dir, env=env)
             run_cmd(["cmake", "--build", "."], cwd=build_dir, env=env)
+        elif toolchain == "msvc_2005_wine" and has_msvc_2005_wine():
+            build_dir = "build_msvc2005_wine_static"
+            # It relies on the pre-existing build_msvc2005_wine.cmd script in c-ci
+            script_path = None
+            if os.path.exists("build_msvc2005_wine.cmd"):
+                script_path = "build_msvc2005_wine.cmd"
+            elif os.path.exists("../c-ci/build_msvc2005_wine.cmd"):
+                script_path = "../c-ci/build_msvc2005_wine.cmd"
+            else:
+                print("Could not find build_msvc2005_wine.cmd")
+                sys.exit(1)
+            run_cmd(["wine", "cmd", "/c", script_path])
         elif toolchain == "msvc_wine" and has_msvc_wine():
             build_dir = "build_msvc_wine"
             os.makedirs(build_dir, exist_ok=True)
@@ -226,6 +249,10 @@ def main():
             sys.exit(0)
             
         env = os.environ.copy()
+        if toolchain == "msvc_2005_wine":
+            # The build script already runs tests
+            print("Tests already run during build script.")
+            sys.exit(0)
         if toolchain == "msvc_wine":
             msvc_wine_path = os.environ.get("MSVC_WINE_PATH", os.path.expanduser("~/my_msvc/opt/msvc"))
             winepath = f"{os.path.abspath(build_dir)};{msvc_wine_path}/bin/x64;{msvc_wine_path}/VC/Redist/MSVC/14.51.36231/debug_nonredist/x64/Microsoft.VC145.DebugCRT;{msvc_wine_path}/Windows Kits/10/bin/10.0.26100.0/x64/ucrt"
