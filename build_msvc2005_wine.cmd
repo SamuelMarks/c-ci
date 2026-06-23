@@ -1,39 +1,45 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
 set "SRC_DIR=%CD%\"
 set "SRC_DIR=%SRC_DIR:~0,-1%"
 set "BUILD_TYPE=Debug"
 
-echo Setting up MSVC 2005 Wine environment...
-
-:: MSVC 2005 paths from the user's OS1 mount
-set "VSINSTALLDIR=Z:\media\samuel\OS1\Program Files (x86)\Microsoft Visual Studio 8"
-set "VCINSTALLDIR=Z:\media\samuel\OS1\Program Files (x86)\Microsoft Visual Studio 8\VC"
-set "FrameworkDir=Z:\media\samuel\OS1\WINDOWS\Microsoft.NET\Framework"
-set "FrameworkVersion=v2.0.50727"
-set "FrameworkSDKDir=Z:\media\samuel\OS1\Program Files (x86)\Microsoft Visual Studio 8\SDK\v2.0"
-set "DevEnvDir=Z:\media\samuel\OS1\Program Files (x86)\Microsoft Visual Studio 8\Common7\IDE"
-
-:: CMake from the user's OS1 mount
-set "CMAKE_BIN=Z:\media\samuel\OS1\Program Files\CMake\bin"
-
-set "PATH=%DevEnvDir%;%VCINSTALLDIR%\BIN;%VSINSTALLDIR%\Common7\Tools;%VSINSTALLDIR%\Common7\Tools\bin;%VCINSTALLDIR%\PlatformSDK\bin;%FrameworkSDKDir%\bin;%FrameworkDir%\%FrameworkVersion%;%VCINSTALLDIR%\VCPackages;%CMAKE_BIN%;%PATH%"
-set "INCLUDE=%VCINSTALLDIR%\ATLMFC\INCLUDE;%VCINSTALLDIR%\INCLUDE;%VCINSTALLDIR%\PlatformSDK\include;%FrameworkSDKDir%\include;%INCLUDE%"
-set "LIB=%VCINSTALLDIR%\ATLMFC\LIB;%VCINSTALLDIR%\LIB;%VCINSTALLDIR%\PlatformSDK\lib;%FrameworkSDKDir%\lib;%LIB%"
-set "LIBPATH=%FrameworkDir%\%FrameworkVersion%;%VCINSTALLDIR%\ATLMFC\LIB"
+call "%~dp0vcvarsalls_wine.cmd"
+if errorlevel 1 exit /b 1
 
 echo ======================================================================
-echo Win MSVC 2005 Wine ^| Static Lib (MTd) ^| ANSI ^| LTO OFF ^| Multi-thread ^| System ^| RTCs
+echo Win MSVC 2005 Wine ^| Static Lib (MTd) ^| LTO OFF ^| Multi-thread ^| RTCs
 echo ======================================================================
 set "BUILD_DIR=%CD%\build_msvc2005_wine_static"
-cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "NMake Makefiles" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DCMAKE_C_FLAGS="/wd4005" -DCMAKE_CXX_FLAGS="/wd4005" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCDD_CHARSET=ANSI -DCDD_THREADING=ON -DCDD_DEPS=SYSTEM -DBUILD_TESTING=ON -DCDD_MSVC_RTC=RTCs -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug %*
+
+echo @echo off> "%BUILD_DIR%_cmake_call.cmd"
+echo set "FETCH_ARGS=">> "%BUILD_DIR%_cmake_call.cmd"
+if exist "..\parson" echo set FETCH_ARGS=%%FETCH_ARGS%% -DFETCHCONTENT_SOURCE_DIR_PARSON="%SRC_DIR%\..\parson">> "%BUILD_DIR%_cmake_call.cmd"
+if exist "..\c-abstract-http" echo set FETCH_ARGS=%%FETCH_ARGS%% -DFETCHCONTENT_SOURCE_DIR_C_ABSTRACT_HTTP="%SRC_DIR%\..\c-abstract-http">> "%BUILD_DIR%_cmake_call.cmd"
+if exist "..\c89stringutils" echo set FETCH_ARGS=%%FETCH_ARGS%% -DFETCHCONTENT_SOURCE_DIR_C89STRINGUTILS="%SRC_DIR%\..\c89stringutils">> "%BUILD_DIR%_cmake_call.cmd"
+if exist "..\cdd-c" echo set FETCH_ARGS=%%FETCH_ARGS%% -DFETCHCONTENT_SOURCE_DIR_CDD_C="%SRC_DIR%\..\cdd-c">> "%BUILD_DIR%_cmake_call.cmd"
+if exist "..\c-str-span" echo set FETCH_ARGS=%%FETCH_ARGS%% -DFETCHCONTENT_SOURCE_DIR_C_STR_SPAN="%SRC_DIR%\..\c-str-span">> "%BUILD_DIR%_cmake_call.cmd"
+if exist "..\c-orm" echo set FETCH_ARGS=%%FETCH_ARGS%% -DFETCHCONTENT_SOURCE_DIR_C_ORM="%SRC_DIR%\..\c-orm">> "%BUILD_DIR%_cmake_call.cmd"
+if exist "..\cfs" echo set FETCH_ARGS=%%FETCH_ARGS%% -DFETCHCONTENT_SOURCE_DIR_CFS="%SRC_DIR%\..\cfs">> "%BUILD_DIR%_cmake_call.cmd"
+
+echo cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DBUILD_TESTING=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug %%FETCH_ARGS%% %%*>> "%BUILD_DIR%_cmake_call.cmd"
+
+call "%BUILD_DIR%_cmake_call.cmd" %*
 if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%"
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
 echo Copying MSVC 2005 debug redistributables...
 copy "%VCINSTALLDIR%\redist\Debug_NonRedist\x86\Microsoft.VC80.DebugCRT\*.*" .
-set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
+
+set "EXTRA_PATH="
+if exist "_deps" (
+    for /d %%D in ("_deps\*-build") do (
+        set "EXTRA_PATH=!EXTRA_PATH!;%%D\%BUILD_TYPE%"
+    )
+)
+set "PATH=%BUILD_DIR%\%BUILD_TYPE%!EXTRA_PATH!;%PATH%"
+
 ctest -C "%BUILD_TYPE%" --output-on-failure
 if errorlevel 1 exit /b 1
 popd
