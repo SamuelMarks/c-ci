@@ -1,8 +1,11 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
 set "SRC_DIR=%CD%\"
 set "SRC_DIR=%SRC_DIR:~0,-1%"
 set "BUILD_TYPE=Debug"
+
+call "%~dp0vcvarsalls.cmd"
+if errorlevel 1 exit /b 1
 
 echo ======================================================================
 echo Win MSVC Latest ^| Shared Lib (MD) ^| Unicode ^| LTO OFF ^| Multi-thread ^| FetchContent
@@ -13,7 +16,15 @@ if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%" --parallel 4
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
-set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
+
+set "EXTRA_PATH="
+if exist "_deps" (
+    for /d %%D in ("_deps\*-build") do (
+        set "EXTRA_PATH=!EXTRA_PATH!;%%D\%BUILD_TYPE%"
+    )
+)
+set "PATH=%BUILD_DIR%\%BUILD_TYPE%!EXTRA_PATH!;%PATH%"
+
 ctest -C "%BUILD_TYPE%" --output-on-failure
 if errorlevel 1 exit /b 1
 popd
@@ -44,7 +55,15 @@ if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%" --parallel 4
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
-set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
+
+set "EXTRA_PATH="
+if exist "_deps" (
+    for /d %%D in ("_deps\*-build") do (
+        set "EXTRA_PATH=!EXTRA_PATH!;%%D\%BUILD_TYPE%"
+    )
+)
+set "PATH=%BUILD_DIR%\%BUILD_TYPE%!EXTRA_PATH!;%PATH%"
+
 ctest -C "%BUILD_TYPE%" --output-on-failure
 if errorlevel 1 exit /b 1
 popd
@@ -58,7 +77,15 @@ if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%" --parallel 4
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
-set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\_deps\c89stringutils-build\%BUILD_TYPE%;%BUILD_DIR%\_deps\c_abstract_http-build\%BUILD_TYPE%;%PATH%
+
+set "EXTRA_PATH="
+if exist "_deps" (
+    for /d %%D in ("_deps\*-build") do (
+        set "EXTRA_PATH=!EXTRA_PATH!;%%D\%BUILD_TYPE%"
+    )
+)
+set "PATH=%BUILD_DIR%\%BUILD_TYPE%!EXTRA_PATH!;%PATH%"
+
 ctest -C "%BUILD_TYPE%" --output-on-failure
 if errorlevel 1 exit /b 1
 popd

@@ -1,7 +1,10 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
 set "SRC_DIR=%CD%\"
 set "SRC_DIR=%SRC_DIR:~0,-1%"
+
+call "%~dp0vcvarsalls.cmd"
+if errorlevel 1 exit /b 1
 
 echo ======================================================================
 echo Win MSVC 2022 ^| Static Analysis (/analyze)
