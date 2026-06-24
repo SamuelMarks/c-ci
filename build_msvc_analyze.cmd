@@ -3,7 +3,7 @@ setlocal EnableDelayedExpansion
 set "SRC_DIR=%CD%\"
 set "SRC_DIR=%SRC_DIR:~0,-1%"
 
-call "%~dp0vcvarsalls.cmd"
+call "%~dp0vcvarsalls.cmd" latest
 if errorlevel 1 exit /b 1
 
 echo ======================================================================

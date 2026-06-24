@@ -4,7 +4,7 @@ set "SRC_DIR=%CD%\"
 set "SRC_DIR=%SRC_DIR:~0,-1%"
 set "BUILD_TYPE=Debug"
 
-call "%~dp0vcvarsalls.cmd"
+call "%~dp0vcvarsalls.cmd" latest
 if errorlevel 1 exit /b 1
 
 echo ======================================================================
@@ -45,9 +45,9 @@ if not defined VCPKG_INSTALLATION_ROOT if not defined VCPKG_ROOT (
 
 set "CMAKE_EXTRA_ARGS="
 if defined VCPKG_INSTALLATION_ROOT (
-  set "CMAKE_EXTRA_ARGS=-DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake"
+  set CMAKE_EXTRA_ARGS="-DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake"
 ) else if defined VCPKG_ROOT (
-  set "CMAKE_EXTRA_ARGS=-DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake"
+  set CMAKE_EXTRA_ARGS="-DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake"
 )
 
 cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "Visual Studio 18 2026" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCDD_CHARSET=ANSI -DCDD_THREADING=OFF -DCDD_DEPS=VCPKG -DBUILD_TESTING=ON -DCDD_MSVC_RTC=RTC1 -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded %CMAKE_EXTRA_ARGS% %*
