@@ -561,14 +561,8 @@ jobs:
 
           if [ ${#CMAKE_ENV_ARGS[@]} -gt 0 ]; then
             cmake -E env "${CMAKE_ENV_ARGS[@]}" ctest -C "${{ inputs.build_type }}" --output-on-failure
-            if [ "${{ inputs.run_valgrind }}" = "true" ] && [ "${{ runner.os }}" = "Linux" ]; then
-              cmake -E env "${CMAKE_ENV_ARGS[@]}" ctest -T memcheck --output-on-failure
-            fi
           else
             ctest -C "${{ inputs.build_type }}" --output-on-failure
-            if [ "${{ inputs.run_valgrind }}" = "true" ] && [ "${{ runner.os }}" = "Linux" ]; then
-              ctest -T memcheck --output-on-failure
-            fi
           fi
           EOF
           
@@ -579,5 +573,34 @@ jobs:
           else
             bash ./run_tests.sh
           fi
+
+      - name: Run Valgrind
+        if: inputs.run_valgrind == true && runner.os == 'Linux' && runner.arch == 'X64'
+        shell: bash
+        working-directory: build
+        run: |
+          cat << 'EOF' > run_valgrind.sh
+          set -e
+          CMAKE_ENV_ARGS=()
+          if [ "${{ inputs.disable_env_inheritance }}" = "true" ]; then
+            CMAKE_ENV_ARGS+=("--ignore-environ")
+            CMAKE_ENV_ARGS+=("PATH=$PATH")
+            if [ -n "$INCLUDE" ]; then CMAKE_ENV_ARGS+=("INCLUDE=$INCLUDE"); fi
+            if [ -n "$LIB" ]; then CMAKE_ENV_ARGS+=("LIB=$LIB"); fi
+            if [ -n "$LIBPATH" ]; then CMAKE_ENV_ARGS+=("LIBPATH=$LIBPATH"); fi
+            if [ -n "$TEMP" ]; then CMAKE_ENV_ARGS+=("TEMP=$TEMP"); fi
+            if [ -n "$TMP" ]; then CMAKE_ENV_ARGS+=("TMP=$TMP"); fi
+            if [ -n "$HOME" ]; then CMAKE_ENV_ARGS+=("HOME=$HOME"); fi
+          fi
+
+          if [ ${#CMAKE_ENV_ARGS[@]} -gt 0 ]; then
+            cmake -E env "${CMAKE_ENV_ARGS[@]}" ctest -T memcheck --output-on-failure
+          else
+            ctest -T memcheck --output-on-failure
+          fi
+          EOF
+          
+          chmod +x ./run_valgrind.sh
+          bash ./run_valgrind.sh
 
 
