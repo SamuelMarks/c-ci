@@ -24,7 +24,7 @@ if [ -d "../c89stringutils" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURC
 if [ -d "../cdd-c" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_CDD_C=\"${SRC_DIR}/../cdd-c\""; fi
 if [ -d "../c-str-span" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C_STR_SPAN=\"${SRC_DIR}/../c-str-span\""; fi
 if [ -d "../c-orm" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C_ORM=\"${SRC_DIR}/../c-orm\""; fi
-if [ -d "../cfs" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_CFS=\"${SRC_DIR}/../cfs\""; fi
+if [ -d "../c-fs" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_CFS=\"${SRC_DIR}/../c-fs\""; fi
 
 echo "======================================================================"
 echo "MSVC 2005 Wine | Static Lib (MTd) | LTO OFF | Multi-thread | RTCs"
@@ -34,20 +34,24 @@ BUILD_DIR="${SRC_DIR}/build_msvc2005_wine_static"
 # Write a toolchain file since MSVC 2005 isn't wrapped by msvc-wine bash scripts
 cat << 'TOOLCHAIN' > msvc2005_toolchain.cmake
 set(CMAKE_SYSTEM_NAME Windows)
-set(CMAKE_C_COMPILER "cl")
-set(CMAKE_CXX_COMPILER "cl")
 set(CMAKE_CROSSCOMPILING_EMULATOR "wine")
+
+# Create a bash wrapper for cl.exe to pass via wine
+file(WRITE "${CMAKE_BINARY_DIR}/cl_wrapper.sh" "#!/bin/bash\nwine cmd /c \"call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && cl.exe %*\"")
+execute_process(COMMAND chmod +x "${CMAKE_BINARY_DIR}/cl_wrapper.sh")
+
+set(CMAKE_C_COMPILER "${CMAKE_BINARY_DIR}/cl_wrapper.sh")
+set(CMAKE_CXX_COMPILER "${CMAKE_BINARY_DIR}/cl_wrapper.sh")
+
 TOOLCHAIN
 
-# Run through bash but in the MSVC 2005 environment using wine cmd to bootstrap then cmake
-cat << 'WRAPPER' > run_msvc2005.cmd
-@echo off
-call Z:\home\samuel\repos\c-ci\vcvarsalls_wine.cmd
-cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DBUILD_TESTING=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DFETCHCONTENT_FULLY_DISCONNECTED=OFF -DFETCHCONTENT_UPDATES_DISCONNECTED=ON %FETCH_ARGS%
-ninja -C "%BUILD_DIR%"
-WRAPPER
+eval cmake -S "\"${SRC_DIR}\"" -B "\"${BUILD_DIR}\"" -DCMAKE_TOOLCHAIN_FILE="msvc2005_toolchain.cmake" -G Ninja -DCMAKE_BUILD_TYPE="\"${BUILD_TYPE}\"" \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+  -DBUILD_TESTING=ON \
+  -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug $FETCH_ARGS "$@"
 
-wine cmd /c run_msvc2005.cmd
+cmake --build "${BUILD_DIR}" --config "${BUILD_TYPE}"
 
 cd "${BUILD_DIR}"
 EXTRA_WINEPATH=""
