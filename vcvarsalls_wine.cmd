@@ -12,8 +12,8 @@ set "FrameworkVersion=v2.0.50727"
 set "FrameworkSDKDir=Z:\media\samuel\OS1\Program Files (x86)\Microsoft Visual Studio 8\SDK\v2.0"
 set "DevEnvDir=Z:\media\samuel\OS1\Program Files (x86)\Microsoft Visual Studio 8\Common7\IDE"
 
-:: CMake and Git from the user's OS1 mount
-set "CMAKE_BIN=Z:\media\samuel\OS1\Program Files\CMake\bin"
+:: CMake (installed in Wine) and Git (from OS1 mount)
+set "CMAKE_BIN=C:\Program Files\CMake\bin"
 set "GIT_BIN=Z:\media\samuel\OS1\Program Files\Git\cmd"
 set "GIT_SSL_NO_VERIFY=true"
 set "GIT_TERMINAL_PROMPT=0"

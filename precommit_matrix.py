@@ -101,6 +101,17 @@ def has_msvc_2005_wine():
     msvc_2005_path = os.environ.get("MSVC_2005_PATH", "/media/samuel/OS1/Program Files (x86)/Microsoft Visual Studio 8")
     return is_tool("wine") and os.path.exists(msvc_2005_path)
 
+def has_msvc_2026_wine():
+    """
+    Check if MSVC 2026 via Wine is available.
+
+    Returns:
+        bool: True if MSVC 2026 via Wine is available, False otherwise.
+    """
+    if os.name == 'nt': return False
+    msvc_2026_path = os.environ.get("MSVC_2026_PATH", os.path.expanduser("~/my_msvc/opt/msvc/vc/tools/msvc/14.51.36231"))
+    return is_tool("wine") and os.path.exists(msvc_2026_path)
+
 
 def has_mingw():
     """
@@ -192,6 +203,17 @@ def main():
                 print("Could not find build_msvc2005_wine.cmd")
                 sys.exit(1)
             run_cmd(["wine", "cmd", "/c", script_path])
+        elif toolchain == "msvc_2026_wine" and has_msvc_2026_wine():
+            build_dir = "build_msvc2026_wine_shared"
+            script_path = None
+            if os.path.exists("build_msvc2026_wine.cmd"):
+                script_path = "build_msvc2026_wine.cmd"
+            elif os.path.exists("../c-ci/build_msvc2026_wine.cmd"):
+                script_path = "../c-ci/build_msvc2026_wine.cmd"
+            else:
+                print("Could not find build_msvc2026_wine.cmd")
+                sys.exit(1)
+            run_cmd(["wine", "cmd", "/c", script_path])
         elif toolchain == "msvc" and has_msvc():
             build_dir = "build_msvc"
             os.makedirs(build_dir, exist_ok=True)
@@ -222,7 +244,7 @@ def main():
             sys.exit(0)
             
         env = os.environ.copy()
-        if toolchain == "msvc_2005_wine":
+        if toolchain == "msvc_2005_wine" or toolchain == "msvc_2026_wine":
             # The build script already runs tests
             print("Tests already run during build script.")
             sys.exit(0)
