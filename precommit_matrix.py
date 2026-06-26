@@ -101,16 +101,6 @@ def has_msvc_2005_wine():
     msvc_2005_path = os.environ.get("MSVC_2005_PATH", "/media/samuel/OS1/Program Files (x86)/Microsoft Visual Studio 8")
     return is_tool("wine") and os.path.exists(msvc_2005_path)
 
-def has_msvc_wine():
-    """
-    Check if MSVC via Wine is available on non-Windows platforms.
-
-    Returns:
-        bool: True if MSVC via Wine is available, False otherwise.
-    """
-    if os.name == 'nt': return False
-    msvc_wine_path = os.environ.get("MSVC_WINE_PATH", os.path.expanduser("~/my_msvc/opt/msvc"))
-    return is_tool("wine") and os.path.exists(msvc_wine_path)
 
 def has_mingw():
     """
@@ -202,23 +192,6 @@ def main():
                 print("Could not find build_msvc2005_wine.cmd")
                 sys.exit(1)
             run_cmd(["wine", "cmd", "/c", script_path])
-        elif toolchain == "msvc_wine" and has_msvc_wine():
-            build_dir = "build_msvc_wine"
-            os.makedirs(build_dir, exist_ok=True)
-            
-            # Create dummy InstallRequiredSystemLibraries.cmake to prevent crashes on Linux host
-            dummy_cmake_dir = os.path.join(build_dir, "dummy_cmake")
-            os.makedirs(dummy_cmake_dir, exist_ok=True)
-            with open(os.path.join(dummy_cmake_dir, "InstallRequiredSystemLibraries.cmake"), "w") as f:
-                f.write("# Dummy file to prevent cross-compilation crash\n")
-
-            env = os.environ.copy()
-            msvc_wine_path = os.environ.get("MSVC_WINE_PATH", os.path.expanduser("~/my_msvc/opt/msvc"))
-            env["PATH"] = f"{msvc_wine_path}/bin/x64:{env.get('PATH', '')}"
-            winepath = f"{os.path.abspath(build_dir)};{msvc_wine_path}/bin/x64;{msvc_wine_path}/VC/Redist/MSVC/14.51.36231/debug_nonredist/x64/Microsoft.VC145.DebugCRT;{msvc_wine_path}/Windows Kits/10/bin/10.0.26100.0/x64/ucrt"
-            env["WINEPATH"] = winepath
-            run_cmd(["cmake", "..", f"-DCMAKE_MODULE_PATH={os.path.abspath(dummy_cmake_dir)}", "-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_SYSTEM_NAME=Windows", "-DCMAKE_C_COMPILER=cl", "-DCMAKE_CXX_COMPILER=cl", "-DCMAKE_CROSSCOMPILING_EMULATOR=wine", "-DBUILD_TESTING=ON", "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL", "-DCMAKE_DISABLE_FIND_PACKAGE_SQLite3=ON", "-DCMAKE_DISABLE_FIND_PACKAGE_ZLIB=ON", "-DCMAKE_DISABLE_FIND_PACKAGE_Brotli=ON", "-DCMAKE_DISABLE_FIND_PACKAGE_CURL=ON"], cwd=build_dir, env=env)
-            run_cmd(["cmake", "--build", "."], cwd=build_dir, env=env)
         elif toolchain == "msvc" and has_msvc():
             build_dir = "build_msvc"
             os.makedirs(build_dir, exist_ok=True)
@@ -253,16 +226,6 @@ def main():
             # The build script already runs tests
             print("Tests already run during build script.")
             sys.exit(0)
-        if toolchain == "msvc_wine":
-            msvc_wine_path = os.environ.get("MSVC_WINE_PATH", os.path.expanduser("~/my_msvc/opt/msvc"))
-            winepath = f"{os.path.abspath(build_dir)};{msvc_wine_path}/bin/x64;{msvc_wine_path}/VC/Redist/MSVC/14.51.36231/debug_nonredist/x64/Microsoft.VC145.DebugCRT;{msvc_wine_path}/Windows Kits/10/bin/10.0.26100.0/x64/ucrt"
-            deps_dir = os.path.join(build_dir, "_deps")
-            if os.path.exists(deps_dir):
-                for d in os.listdir(deps_dir):
-                    if d.endswith("-build"):
-                        winepath += f";{os.path.abspath(os.path.join(deps_dir, d))}"
-            env["WINEPATH"] = winepath
-
         run_cmd(["ctest", "--output-on-failure"], cwd=build_dir, env=env)
 
         # Run custom script for cdd-c or other repos that need extra test logic
