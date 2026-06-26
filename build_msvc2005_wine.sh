@@ -30,22 +30,40 @@ echo "======================================================================"
 echo "MSVC 2005 Wine | Static Lib (MTd) | LTO OFF | Multi-thread | RTCs"
 echo "======================================================================"
 BUILD_DIR="${SRC_DIR}/build_msvc2005_wine_static"
-
-# Write a toolchain file since MSVC 2005 isn't wrapped by msvc-wine bash scripts
-cat << 'TOOLCHAIN' > msvc2005_toolchain.cmake
-set(CMAKE_SYSTEM_NAME Windows)
-set(CMAKE_CROSSCOMPILING_EMULATOR "wine")
+mkdir -p "$BUILD_DIR"
 
 # Create a bash wrapper for cl.exe to pass via wine
-file(WRITE "${CMAKE_BINARY_DIR}/cl_wrapper.sh" "#!/bin/bash\nwine cmd /c \"call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && cl.exe %*\"")
-execute_process(COMMAND chmod +x "${CMAKE_BINARY_DIR}/cl_wrapper.sh")
+cat << 'WRAPPER' > "${BUILD_DIR}/cl_wrapper.sh"
+#!/bin/bash
+ARGS="$@"
+wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && cl.exe $ARGS"
+WRAPPER
+chmod +x "${BUILD_DIR}/cl_wrapper.sh"
 
+cat << 'WRAPPER' > "${BUILD_DIR}/link_wrapper.sh"
+#!/bin/bash
+ARGS="$@"
+wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && link.exe $ARGS"
+WRAPPER
+chmod +x "${BUILD_DIR}/link_wrapper.sh"
+
+cat << 'WRAPPER' > "${BUILD_DIR}/lib_wrapper.sh"
+#!/bin/bash
+ARGS="$@"
+wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && lib.exe $ARGS"
+WRAPPER
+chmod +x "${BUILD_DIR}/lib_wrapper.sh"
+
+cat << 'TOOLCHAIN' > "${BUILD_DIR}/msvc2005_toolchain.cmake"
+set(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_CROSSCOMPILING_EMULATOR "wine")
 set(CMAKE_C_COMPILER "${CMAKE_BINARY_DIR}/cl_wrapper.sh")
 set(CMAKE_CXX_COMPILER "${CMAKE_BINARY_DIR}/cl_wrapper.sh")
-
+set(CMAKE_LINKER "${CMAKE_BINARY_DIR}/link_wrapper.sh")
+set(CMAKE_AR "${CMAKE_BINARY_DIR}/lib_wrapper.sh")
 TOOLCHAIN
 
-eval cmake -S "\"${SRC_DIR}\"" -B "\"${BUILD_DIR}\"" -DCMAKE_TOOLCHAIN_FILE="msvc2005_toolchain.cmake" -G Ninja -DCMAKE_BUILD_TYPE="\"${BUILD_TYPE}\"" \
+eval cmake -S "\"${SRC_DIR}\"" -B "\"${BUILD_DIR}\"" -DCMAKE_TOOLCHAIN_FILE="\"${BUILD_DIR}/msvc2005_toolchain.cmake\"" -G Ninja -DCMAKE_BUILD_TYPE="\"${BUILD_TYPE}\"" \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
   -DBUILD_TESTING=ON \
