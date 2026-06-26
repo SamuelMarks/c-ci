@@ -15,8 +15,12 @@ set "DevEnvDir=Z:\media\samuel\OS1\Program Files (x86)\Microsoft Visual Studio 8
 :: CMake (installed in Wine) and Git (from OS1 mount)
 set "CMAKE_BIN=C:\Program Files\CMake\bin"
 set "GIT_BIN=Z:\media\samuel\OS1\Program Files\Git\cmd"
+set "GIT_SSL_CAINFO=Z:\media\samuel\OS1\Program Files\Git\mingw64\etc\ssl\certs\ca-bundle.crt"
 set "GIT_SSL_NO_VERIFY=true"
 set "GIT_TERMINAL_PROMPT=0"
+set "GIT_ALLOW_PROTOCOL=file:http:https"
+set "GIT_OPT_SUBMODULE_RECURSE=0"
+set "GIT_CONFIG_GLOBAL=NUL"
 
 set "PATH=%DevEnvDir%;%VCINSTALLDIR%\BIN;%VSINSTALLDIR%\Common7\Tools;%VSINSTALLDIR%\Common7\Tools\bin;%VCINSTALLDIR%\PlatformSDK\bin;%FrameworkSDKDir%\bin;%FrameworkDir%\%FrameworkVersion%;%VCINSTALLDIR%\VCPackages;%CMAKE_BIN%;%GIT_BIN%;%PATH%"
 set "INCLUDE=%VCINSTALLDIR%\ATLMFC\INCLUDE;%VCINSTALLDIR%\INCLUDE;%VCINSTALLDIR%\PlatformSDK\include;%FrameworkSDKDir%\include;%INCLUDE%"
