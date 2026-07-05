@@ -152,7 +152,7 @@ def main():
     toolchain = sys.argv[2] if len(sys.argv) > 2 else None
 
     # Check for custom pre_commit.py in repo (like cdd-c)
-    if os.path.exists("scripts/pre_commit.py") and job != "shields":
+    if os.path.exists(os.path.join("scripts", "pre_commit.py")) and job != "shields":
         # Forward to repo-specific script if it exists
         if job in ["build", "test", "valgrind"]:
             # cdd-c expects job without toolchain, maybe? Let's be smart.
@@ -197,8 +197,8 @@ def main():
             script_path = None
             if os.path.exists("build_msvc2005_wine.cmd"):
                 script_path = "build_msvc2005_wine.cmd"
-            elif os.path.exists("../c-ci/build_msvc2005_wine.cmd"):
-                script_path = "../c-ci/build_msvc2005_wine.cmd"
+            elif os.path.exists(os.path.join("..", "c-ci", "build_msvc2005_wine.cmd")):
+                script_path = os.path.join("..", "c-ci", "build_msvc2005_wine.cmd")
             else:
                 print("Could not find build_msvc2005_wine.cmd")
                 sys.exit(1)
@@ -208,8 +208,8 @@ def main():
             script_path = None
             if os.path.exists("build_msvc2026_wine.cmd"):
                 script_path = "build_msvc2026_wine.cmd"
-            elif os.path.exists("../c-ci/build_msvc2026_wine.cmd"):
-                script_path = "../c-ci/build_msvc2026_wine.cmd"
+            elif os.path.exists(os.path.join("..", "c-ci", "build_msvc2026_wine.cmd")):
+                script_path = os.path.join("..", "c-ci", "build_msvc2026_wine.cmd")
             else:
                 print("Could not find build_msvc2026_wine.cmd")
                 sys.exit(1)
@@ -251,7 +251,7 @@ def main():
         run_cmd(["ctest", "--output-on-failure"], cwd=build_dir, env=env)
 
         # Run custom script for cdd-c or other repos that need extra test logic
-        if toolchain == "gcc" and os.path.exists("scripts/pre_commit.py"):
+        if toolchain == "gcc" and os.path.exists(os.path.join("scripts", "pre_commit.py")):
             print("Running repo-specific test script...")
             # For cdd-c, we might just call shields script instead, but let's see.
 
@@ -277,7 +277,7 @@ def main():
                         cmd.append(os.path.join(dp, f))
                         # Run the test relative to build_dir so it doesn't corrupt repo root
                         rel_f = os.path.relpath(os.path.join(dp, f), build_dir)
-                        cmd[-1] = f"./{rel_f}"
+                        cmd[-1] = "." + os.sep + rel_f
                         run_cmd(cmd, cwd=build_dir, env=env)
             print("Valgrind clean.")
         else:
@@ -286,21 +286,21 @@ def main():
 
     elif job == "shields":
         # Check if there is a custom shields script
-        if os.path.exists("scripts/pre_commit.py"):
+        if os.path.exists(os.path.join("scripts", "pre_commit.py")):
             print("Running repo-specific pre_commit.py for shields...")
-            run_cmd([sys.executable, "scripts/pre_commit.py", "shields"])
+            run_cmd([sys.executable, os.path.join("scripts", "pre_commit.py"), "shields"])
             sys.exit(0)
-        elif os.path.exists("scripts/update_shields.py"):
+        elif os.path.exists(os.path.join("scripts", "update_shields.py")):
             print("Running custom scripts/update_shields.py...")
-            run_cmd([sys.executable, "scripts/update_shields.py"])
+            run_cmd([sys.executable, os.path.join("scripts", "update_shields.py")])
             sys.exit(0)
-        elif os.path.exists("scripts/update_badges.py"):
+        elif os.path.exists(os.path.join("scripts", "update_badges.py")):
             print("Running custom scripts/update_badges.py...")
-            run_cmd([sys.executable, "scripts/update_badges.py"])
+            run_cmd([sys.executable, os.path.join("scripts", "update_badges.py")])
             sys.exit(0)
-        elif os.path.exists("scripts/update_badges.sh"):
+        elif os.path.exists(os.path.join("scripts", "update_badges.sh")):
             print("Running custom scripts/update_badges.sh...")
-            run_cmd(["bash", "scripts/update_badges.sh"])
+            run_cmd(["bash", os.path.join("scripts", "update_badges.sh")])
             sys.exit(0)
 
         # Fallback generic shields

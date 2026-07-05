@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 SRC_DIR="$PWD"
@@ -32,25 +32,22 @@ echo "======================================================================"
 BUILD_DIR="${SRC_DIR}/build_msvc2005_wine_static"
 mkdir -p "$BUILD_DIR"
 
-# Create a bash wrapper for cl.exe to pass via wine
+# Create a sh wrapper for cl.exe to pass via wine
 cat << 'WRAPPER' > "${BUILD_DIR}/cl_wrapper.sh"
-#!/bin/bash
-ARGS="$@"
-wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && cl.exe $ARGS"
+#!/bin/sh
+wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && cl.exe $@"
 WRAPPER
 chmod +x "${BUILD_DIR}/cl_wrapper.sh"
 
 cat << 'WRAPPER' > "${BUILD_DIR}/link_wrapper.sh"
-#!/bin/bash
-ARGS="$@"
-wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && link.exe $ARGS"
+#!/bin/sh
+wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && link.exe $@"
 WRAPPER
 chmod +x "${BUILD_DIR}/link_wrapper.sh"
 
 cat << 'WRAPPER' > "${BUILD_DIR}/lib_wrapper.sh"
-#!/bin/bash
-ARGS="$@"
-wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && lib.exe $ARGS"
+#!/bin/sh
+wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && lib.exe $@"
 WRAPPER
 chmod +x "${BUILD_DIR}/lib_wrapper.sh"
 

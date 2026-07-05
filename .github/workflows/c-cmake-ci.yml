@@ -213,6 +213,20 @@ jobs:
             rtc: "OFF"
 
           # ==========================================
+          # WEBASSEMBLY - Emscripten
+          # ==========================================
+          - name: WebAssembly Emscripten | Static Lib | ANSI | Multi-thread | LTO OFF | FetchContent
+            os: ubuntu-latest
+            compiler: emscripten
+            crt: ""
+            charset: ANSI
+            shared: "OFF"
+            lto: "OFF"
+            thread: "ON"
+            deps: FETCHCONTENT
+            rtc: "OFF"
+
+          # ==========================================
           # MACOS - Apple Clang
           # ==========================================
           - name: macOS Clang | Shared Lib | Unicode | Multi-thread | LTO ON | FetchContent
@@ -385,6 +399,10 @@ jobs:
         if: matrix.compiler == 'mingw'
         uses: egor-tensin/setup-mingw@v3
 
+      - name: Setup Emscripten
+        if: matrix.compiler == 'emscripten'
+        uses: mymindstorm/setup-emsdk@v14
+
       - name: Configure CMake
         shell: bash
         run: |
@@ -449,6 +467,11 @@ jobs:
           if [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ runner.os }}" = "Linux" ]; then
             export CC=clang
             export CXX=clang++
+          fi
+
+          # Emscripten Toolchain
+          if [ "${{ matrix.compiler }}" = "emscripten" ]; then
+            CMAKE_EXTRA_ARGS+=("-DCMAKE_TOOLCHAIN_FILE=$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake")
           fi
 
           # Auto Test Flag derived from project name

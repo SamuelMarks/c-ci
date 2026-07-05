@@ -74,3 +74,19 @@ repos:
         language: python
         additional_dependencies: [gcovr]
         pass_filenames: false
+
+      # Example: Enforce enum return types using tree-sitter (lightweight heuristic)
+      # - id: check-enum-returns-treesitter
+      #   name: Check enum return types (tree-sitter)
+      #   entry: precommit_hooks/check_enum_returns_treesitter.py
+      #   language: python
+      #   types: [c]
+      #   additional_dependencies: [tree-sitter, tree-sitter-c]
+
+      # Example: Enforce enum return types using libclang (strict semantic analysis)
+      # - id: check-enum-returns-clang
+      #   name: Check enum return types (libclang)
+      #   entry: precommit_hooks/check_enum_returns_clang.py
+      #   language: python
+      #   types: [c]
+      #   additional_dependencies: [libclang]
