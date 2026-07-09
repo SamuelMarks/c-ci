@@ -598,7 +598,7 @@ jobs:
           fi
 
       - name: Run Valgrind
-        if: inputs.run_valgrind == true && runner.os == 'Linux' && runner.arch == 'X64'
+        if: inputs.run_valgrind == true && runner.os == 'Linux' && runner.arch == 'X64' && matrix.compiler != 'emscripten'
         shell: bash
         working-directory: build
         run: |
