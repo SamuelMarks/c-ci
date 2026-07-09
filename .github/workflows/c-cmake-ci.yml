@@ -261,7 +261,7 @@ jobs:
           cat << 'EOF' > env_vars.json
           ${{ inputs.env_vars }}
           EOF
-          
+
           # Parse the JSON and append to GITHUB_ENV
           # jq -r to strip quotes and format as KEY=VALUE
           if command -v jq >/dev/null 2>&1; then
@@ -431,7 +431,7 @@ jobs:
             elif [ -n "$VCPKG_ROOT" ]; then
               TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
             fi
-            
+
             if [ -n "$TOOLCHAIN_FILE" ]; then
               if [ "${{ matrix.compiler }}" = "cygwin" ] && command -v cygpath >/dev/null 2>&1; then
                 TOOLCHAIN_FILE=$(cygpath -u "$TOOLCHAIN_FILE")
@@ -523,9 +523,9 @@ jobs:
               "${CMAKE_EXTRA_ARGS[@]}" ${{ inputs.cmake_configure_flags }}
           fi
           EOF
-          
+
           chmod +x ./run_configure.sh
-          
+
           if [ "${{ matrix.compiler }}" = "cygwin" ]; then
             C:/cygwin/bin/bash.exe --login -o igncr -c 'cd "$(cygpath -u "$GITHUB_WORKSPACE")"; ./run_configure.sh'
           else
@@ -555,9 +555,9 @@ jobs:
             cmake --build build --config "${{ inputs.build_type }}" --parallel 4 ${{ inputs.cmake_build_flags }}
           fi
           EOF
-          
+
           chmod +x ./run_build.sh
-          
+
           if [ "${{ matrix.compiler }}" = "cygwin" ]; then
             C:/cygwin/bin/bash.exe --login -o igncr -c 'cd "$(cygpath -u "$GITHUB_WORKSPACE")"; ./run_build.sh'
           else
@@ -588,9 +588,9 @@ jobs:
             ctest -C "${{ inputs.build_type }}" --output-on-failure
           fi
           EOF
-          
+
           chmod +x ./run_tests.sh
-          
+
           if [ "${{ matrix.compiler }}" = "cygwin" ]; then
             C:/cygwin/bin/bash.exe --login -o igncr -c 'cd "$(cygpath -u "$GITHUB_WORKSPACE/build")"; ./run_tests.sh'
           else
@@ -622,8 +622,6 @@ jobs:
             ctest -T memcheck --output-on-failure
           fi
           EOF
-          
+
           chmod +x ./run_valgrind.sh
           bash ./run_valgrind.sh
-
-

@@ -60,10 +60,10 @@ jobs:
     with:
       # Optional: Change default build type here (default is Debug)
       build_type: 'Release'
-      
+
       # Optional: Pass custom CMake configuration flags
       cmake_configure_flags: '-DBUILD_EXAMPLES=ON'
-      
+
       # Optional: Pass custom CMake build flags
       cmake_build_flags: '--clean-first'
 

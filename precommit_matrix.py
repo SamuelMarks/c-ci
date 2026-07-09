@@ -242,7 +242,7 @@ def main():
         if not os.path.exists(build_dir):
             print(f"Build directory {build_dir} not found. Skipping test.")
             sys.exit(0)
-            
+
         env = os.environ.copy()
         if toolchain == "msvc_2005_wine" or toolchain == "msvc_2026_wine":
             # The build script already runs tests
@@ -258,28 +258,31 @@ def main():
         sys.exit(0)
 
     elif job == "valgrind":
-        if toolchain == "gcc" and has_gcc() and is_tool("valgrind") and sys.platform.startswith("linux"):
-            build_dir = "build_gcc"
-            if not os.path.exists(build_dir):
-                print(f"Build directory {build_dir} not found. Skipping valgrind.")
-                sys.exit(0)
-            print("Running valgrind on tests...")
-            env = os.environ.copy()
-            env["RUNNING_UNDER_VALGRIND"] = "1"
-            for dp, dn, filenames in os.walk(build_dir):
-                if "_deps" in dp:
-                    continue
-                for f in filenames:
-                    if "test" in f.lower() and os.access(os.path.join(dp, f), os.X_OK) and not f.endswith(".c") and not f.endswith(".h") and not f.endswith(".sh") and not f.endswith(".py") and "parson" not in f.lower():
-                        cmd = ["valgrind", "--leak-check=full", "--error-exitcode=1"]
-                        if os.path.exists(".valgrind.supp"):
-                            cmd.append(f"--suppressions={os.path.abspath('.valgrind.supp')}")
-                        cmd.append(os.path.join(dp, f))
-                        # Run the test relative to build_dir so it doesn't corrupt repo root
-                        rel_f = os.path.relpath(os.path.join(dp, f), build_dir)
-                        cmd[-1] = "." + os.sep + rel_f
-                        run_cmd(cmd, cwd=build_dir, env=env)
-            print("Valgrind clean.")
+        if toolchain in ("gcc", "clang") and is_tool("valgrind") and sys.platform.startswith("linux"):
+            if (toolchain == "gcc" and has_gcc()) or (toolchain == "clang" and has_clang()):
+                build_dir = f"build_{toolchain}"
+                if not os.path.exists(build_dir):
+                    print(f"Build directory {build_dir} not found. Skipping valgrind.")
+                    sys.exit(0)
+                print("Running valgrind on tests...")
+                env = os.environ.copy()
+                env["RUNNING_UNDER_VALGRIND"] = "1"
+                for dp, dn, filenames in os.walk(build_dir):
+                    if "_deps" in dp:
+                        continue
+                    for f in filenames:
+                        if "test" in f.lower() and os.access(os.path.join(dp, f), os.X_OK) and not f.endswith(".c") and not f.endswith(".h") and not f.endswith(".sh") and not f.endswith(".py") and "parson" not in f.lower():
+                            cmd = ["valgrind", "--leak-check=full", "--error-exitcode=1"]
+                            if os.path.exists(".valgrind.supp"):
+                                cmd.append(f"--suppressions={os.path.abspath('.valgrind.supp')}")
+                            cmd.append(os.path.join(dp, f))
+                            # Run the test relative to build_dir so it doesn't corrupt repo root
+                            rel_f = os.path.relpath(os.path.join(dp, f), build_dir)
+                            cmd[-1] = "." + os.sep + rel_f
+                            run_cmd(cmd, cwd=build_dir, env=env)
+                print("Valgrind clean.")
+            else:
+                print("Valgrind skipped.")
         else:
             print("Valgrind skipped.")
         sys.exit(0)
@@ -351,7 +354,7 @@ def main():
 
         doc_color = get_color(doc_cov)
         doc_shield = f"[![Doc Coverage](https://img.shields.io/badge/docs-{doc_cov:.0f}%25-{doc_color}.svg)](#)"
-        
+
         test_shield = ""
         if test_cov is not None:
             test_color = get_color(test_cov)
@@ -368,7 +371,7 @@ def main():
             insert_str = r"\1" + doc_shield + "\n"
             if test_shield:
                 insert_str += test_shield + "\n"
-                
+
             readme = re.sub(license_regex, insert_str, readme, count=1)
 
             with open("README.md", "w", encoding="utf-8") as f:
