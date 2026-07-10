@@ -253,6 +253,8 @@ def main():
             winepath = "/usr/lib/gcc/x86_64-w64-mingw32/13-win32;/usr/x86_64-w64-mingw32/lib;" + os.path.abspath(os.path.join(build_dir, "bin"))
             env["WINEPATH"] = winepath
             
+        env["_NO_DEBUG_HEAP"] = "1"
+
         run_cmd(["ctest", "--output-on-failure"], cwd=build_dir, env=env)
 
         # Run custom script for cdd-c or other repos that need extra test logic
