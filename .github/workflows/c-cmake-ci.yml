@@ -251,6 +251,7 @@ jobs:
             deps: SYSTEM
             rtc: "OFF"
 
+    timeout-minutes: 60
     steps:
       - name: Inject Custom Environment Variables
         if: inputs.env_vars != '' && inputs.env_vars != '{}'
