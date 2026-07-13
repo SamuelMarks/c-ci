@@ -253,6 +253,23 @@ jobs:
 
     timeout-minutes: 60
     steps:
+      - name: Disable Windows Error Reporting (WerFault) Dialogs
+
+        if: runner.os == 'Windows'
+
+        shell: pwsh
+
+        run: |
+
+          # Disable WerFault UI so that crashes fail immediately instead of hanging
+
+          Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting" -Name "DontShowUI" -Value 1 -Type DWord -Force
+
+          # Disable Dr. Watson debugger UI
+
+          Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug" -Name "Auto" -Value 1 -Type String -Force
+
+
       - name: Inject Custom Environment Variables
         if: inputs.env_vars != '' && inputs.env_vars != '{}'
         shell: bash
