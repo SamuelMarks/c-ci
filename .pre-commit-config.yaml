@@ -96,3 +96,11 @@ repos:
       #   language: python
       #   types: [c]
       #   additional_dependencies: [libclang]
+
+      # Enforce strict error percolation for functions returning an enum using libclang
+      # - id: check-error-percolation-clang
+      #   name: Check strict error percolation (libclang)
+      #   entry: precommit_hooks/check_error_percolation_clang.py
+      #   language: python
+      #   types: [c]
+      #   additional_dependencies: [libclang]

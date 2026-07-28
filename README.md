@@ -37,6 +37,18 @@ This is public for anyone to use. Here's where I use it:
 *   **Cross-Platform Line Ending Safety:** Transparently converts source code using `unix2dos` and `dos2unix` depending on the compiler environment, preventing insidious compilation failures or macro breakage on MSVC vs GCC due to `\r\n` and `\n` discrepancies.
 *   **Environment Isolation:** Disable CI environment inheritance with `disable_env_inheritance` or inject arbitrary variables securely using `env_vars`.
 
+## 🛡️ Strict Error Percolation Tooling
+
+In addition to CI orchestration, `c-ci` provides a robust, two-layered defense mechanism to eliminate a common source of undefined behavior in C: **silently discarded error returns**.
+
+1.  **Layer 1 (Compiler Enforcement):**
+    We provide a cross-platform header `include/c_error_percolation.h` that exports the `C_ERROR_NODISCARD` macro. By attaching this macro to your error `typedef` or `enum`, your compiler (GCC, Clang, MSVC) will immediately warn you (or fail via `-Werror`) if you forget to capture the result of an error-returning function (e.g., just writing `foo();`).
+
+2.  **Layer 2 (AST CFG Analysis):**
+    To ensure developers don't just capture the error to silence the compiler (e.g., `result_t rc = foo();` and then ignoring `rc`), we provide a dedicated Python pre-commit hook in `precommit_hooks/check_error_percolation_clang.py`. Powered by `libclang`, this hook parses the Abstract Syntax Tree (AST) to strictly enforce that the captured error is immediately checked in an `if` statement, not mutated, and correctly returned up the call stack (including `goto cleanup;` idioms).
+
+For detailed usage, see the documentation in [`include/README.md`](include/README.md) and [`precommit_hooks/README.md`](precommit_hooks/README.md). You can also run the hook manually against your codebase to generate an LLM-friendly markdown report for automated auditing.
+
 ---
 
 ## 🚀 How to Use in Your Project

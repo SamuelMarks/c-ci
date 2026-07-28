@@ -18,6 +18,7 @@ for key in ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE"]:
     if key in os.environ:
         del os.environ[key]
 
+
 def run_cmd(cmd, cwd=None, env=None, check=True):
     """
     Run a shell command using subprocess.run.
@@ -39,16 +40,19 @@ def run_cmd(cmd, cwd=None, env=None, check=True):
         if check:
             sys.exit(1)
         else:
+
             class DummyResult:
                 """Dummy result class for when a command is not found and check is False."""
 
                 returncode = 127
                 """int: The return code, always set to 127 for not found."""
+
             return DummyResult()
     if check and result.returncode != 0:
         print(f"Command failed with exit code {result.returncode}: {' '.join(cmd)}")
         sys.exit(result.returncode)
     return result
+
 
 def is_tool(name):
     """
@@ -62,6 +66,7 @@ def is_tool(name):
     """
     return shutil.which(name) is not None
 
+
 def has_gcc():
     """
     Check if the gcc compiler is available.
@@ -70,6 +75,7 @@ def has_gcc():
         bool: True if gcc is available, False otherwise.
     """
     return is_tool("gcc")
+
 
 def has_clang():
     """
@@ -80,6 +86,7 @@ def has_clang():
     """
     return is_tool("clang")
 
+
 def has_msvc():
     """
     Check if the MSVC compiler (cl.exe) is available on Windows.
@@ -87,8 +94,10 @@ def has_msvc():
     Returns:
         bool: True if MSVC is available and OS is Windows, False otherwise.
     """
-    if os.name == 'nt' and is_tool("cl.exe"): return True
+    if os.name == "nt" and is_tool("cl.exe"):
+        return True
     return False
+
 
 def has_msvc_2005_wine():
     """
@@ -97,9 +106,14 @@ def has_msvc_2005_wine():
     Returns:
         bool: True if MSVC 2005 via Wine is available, False otherwise.
     """
-    if os.name == 'nt': return False
-    msvc_2005_path = os.environ.get("MSVC_2005_PATH", "/media/samuel/OS1/Program Files (x86)/Microsoft Visual Studio 8")
+    if os.name == "nt":
+        return False
+    msvc_2005_path = os.environ.get(
+        "MSVC_2005_PATH",
+        "/media/samuel/OS1/Program Files (x86)/Microsoft Visual Studio 8",
+    )
     return is_tool("wine") and os.path.exists(msvc_2005_path)
+
 
 def has_msvc_2026_wine():
     """
@@ -108,8 +122,12 @@ def has_msvc_2026_wine():
     Returns:
         bool: True if MSVC 2026 via Wine is available, False otherwise.
     """
-    if os.name == 'nt': return False
-    msvc_2026_path = os.environ.get("MSVC_2026_PATH", os.path.expanduser("~/my_msvc/opt/msvc/vc/tools/msvc/14.51.36231"))
+    if os.name == "nt":
+        return False
+    msvc_2026_path = os.environ.get(
+        "MSVC_2026_PATH",
+        os.path.expanduser("~/my_msvc/opt/msvc/vc/tools/msvc/14.51.36231"),
+    )
     return is_tool("wine") and os.path.exists(msvc_2026_path)
 
 
@@ -120,10 +138,11 @@ def has_mingw():
     Returns:
         bool: True if MinGW gcc is available, False otherwise.
     """
-    if os.name == 'nt' and is_tool("gcc"):
+    if os.name == "nt" and is_tool("gcc"):
         res = subprocess.run(["gcc", "-v"], capture_output=True, text=True)
         return "mingw" in res.stderr.lower()
     return False
+
 
 def has_cygwin():
     """
@@ -132,10 +151,11 @@ def has_cygwin():
     Returns:
         bool: True if Cygwin gcc is available, False otherwise.
     """
-    if os.name == 'nt' and is_tool("gcc"):
+    if os.name == "nt" and is_tool("gcc"):
         res = subprocess.run(["gcc", "-v"], capture_output=True, text=True)
         return "cygwin" in res.stderr.lower()
     return False
+
 
 def main():
     """
@@ -145,7 +165,9 @@ def main():
         None
     """
     if len(sys.argv) < 2:
-        print("Usage: python precommit_matrix.py [cppcheck|build|test|valgrind|shields] [toolchain]")
+        print(
+            "Usage: python precommit_matrix.py [cppcheck|build|test|valgrind|shields] [toolchain]"
+        )
         sys.exit(1)
 
     job = sys.argv[1]
@@ -165,7 +187,13 @@ def main():
             print("Running cppcheck...")
             dirs = [d for d in ["src", "include"] if os.path.isdir(d)]
             if dirs:
-                cmd = ["cppcheck", "--enable=warning,performance,portability", "--suppress=missingIncludeSystem", "--suppress=unknownMacro", "--suppress=unusedFunction"]
+                cmd = [
+                    "cppcheck",
+                    "--enable=warning,performance,portability",
+                    "--suppress=missingIncludeSystem",
+                    "--suppress=unknownMacro",
+                    "--suppress=unusedFunction",
+                ]
                 if os.path.isdir("include"):
                     cmd.extend(["-I", "include"])
                 cmd.extend(dirs)
@@ -182,14 +210,29 @@ def main():
             os.makedirs(build_dir, exist_ok=True)
             env = os.environ.copy()
             env["CC"] = "gcc"
-            run_cmd(["cmake", "..", "-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_C_FLAGS=--coverage", "-DCMAKE_EXE_LINKER_FLAGS=--coverage", "-DBUILD_TESTING=ON"], cwd=build_dir, env=env)
+            run_cmd(
+                [
+                    "cmake",
+                    "..",
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                    "-DCMAKE_C_FLAGS=--coverage",
+                    "-DCMAKE_EXE_LINKER_FLAGS=--coverage",
+                    "-DBUILD_TESTING=ON",
+                ],
+                cwd=build_dir,
+                env=env,
+            )
             run_cmd(["cmake", "--build", "."], cwd=build_dir, env=env)
         elif toolchain == "clang" and has_clang():
             build_dir = "build_clang"
             os.makedirs(build_dir, exist_ok=True)
             env = os.environ.copy()
             env["CC"] = "clang"
-            run_cmd(["cmake", "..", "-DCMAKE_BUILD_TYPE=Release", "-DBUILD_TESTING=ON"], cwd=build_dir, env=env)
+            run_cmd(
+                ["cmake", "..", "-DCMAKE_BUILD_TYPE=Release", "-DBUILD_TESTING=ON"],
+                cwd=build_dir,
+                env=env,
+            )
             run_cmd(["cmake", "--build", "."], cwd=build_dir, env=env)
         elif toolchain == "msvc_2005_wine" and has_msvc_2005_wine():
             build_dir = "build_msvc2005_wine_static"
@@ -217,24 +260,44 @@ def main():
         elif toolchain == "msvc" and has_msvc():
             build_dir = "build_msvc"
             os.makedirs(build_dir, exist_ok=True)
-            run_cmd(["cmake", "..", "-DCMAKE_BUILD_TYPE=Debug", "-DBUILD_TESTING=ON"], cwd=build_dir)
+            run_cmd(
+                ["cmake", "..", "-DCMAKE_BUILD_TYPE=Debug", "-DBUILD_TESTING=ON"],
+                cwd=build_dir,
+            )
             run_cmd(["cmake", "--build", "."], cwd=build_dir)
         elif toolchain == "mingw" and has_mingw():
             build_dir = "build_mingw"
             os.makedirs(build_dir, exist_ok=True)
             env = os.environ.copy()
             env["CC"] = "gcc"
-            run_cmd(["cmake", "..", "-G", "MinGW Makefiles", "-DCMAKE_BUILD_TYPE=Debug", "-DBUILD_TESTING=ON"], cwd=build_dir, env=env)
+            run_cmd(
+                [
+                    "cmake",
+                    "..",
+                    "-G",
+                    "MinGW Makefiles",
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                    "-DBUILD_TESTING=ON",
+                ],
+                cwd=build_dir,
+                env=env,
+            )
             run_cmd(["cmake", "--build", "."], cwd=build_dir, env=env)
         elif toolchain == "cygwin" and has_cygwin():
             build_dir = "build_cygwin"
             os.makedirs(build_dir, exist_ok=True)
             env = os.environ.copy()
             env["CC"] = "gcc"
-            run_cmd(["cmake", "..", "-DCMAKE_BUILD_TYPE=Debug", "-DBUILD_TESTING=ON"], cwd=build_dir, env=env)
+            run_cmd(
+                ["cmake", "..", "-DCMAKE_BUILD_TYPE=Debug", "-DBUILD_TESTING=ON"],
+                cwd=build_dir,
+                env=env,
+            )
             run_cmd(["cmake", "--build", "."], cwd=build_dir, env=env)
         else:
-            print(f"Toolchain {toolchain} not found or not supported on this OS. Skipping build.")
+            print(
+                f"Toolchain {toolchain} not found or not supported on this OS. Skipping build."
+            )
         sys.exit(0)
 
     elif job == "test":
@@ -248,25 +311,36 @@ def main():
             # The build script already runs tests
             print("Tests already run during build script.")
             sys.exit(0)
-            
-        if toolchain == "mingw" and os.name != 'nt':
-            winepath = "/usr/lib/gcc/x86_64-w64-mingw32/13-win32;/usr/x86_64-w64-mingw32/lib;" + os.path.abspath(os.path.join(build_dir, "bin"))
+
+        if toolchain == "mingw" and os.name != "nt":
+            winepath = (
+                "/usr/lib/gcc/x86_64-w64-mingw32/13-win32;/usr/x86_64-w64-mingw32/lib;"
+                + os.path.abspath(os.path.join(build_dir, "bin"))
+            )
             env["WINEPATH"] = winepath
-            
+
         env["_NO_DEBUG_HEAP"] = "1"
 
         run_cmd(["ctest", "--output-on-failure"], cwd=build_dir, env=env)
 
         # Run custom script for cdd-c or other repos that need extra test logic
-        if toolchain == "gcc" and os.path.exists(os.path.join("scripts", "pre_commit.py")):
+        if toolchain == "gcc" and os.path.exists(
+            os.path.join("scripts", "pre_commit.py")
+        ):
             print("Running repo-specific test script...")
             # For cdd-c, we might just call shields script instead, but let's see.
 
         sys.exit(0)
 
     elif job == "valgrind":
-        if toolchain in ("gcc", "clang") and is_tool("valgrind") and sys.platform.startswith("linux"):
-            if (toolchain == "gcc" and has_gcc()) or (toolchain == "clang" and has_clang()):
+        if (
+            toolchain in ("gcc", "clang")
+            and is_tool("valgrind")
+            and sys.platform.startswith("linux")
+        ):
+            if (toolchain == "gcc" and has_gcc()) or (
+                toolchain == "clang" and has_clang()
+            ):
                 build_dir = f"build_{toolchain}"
                 if not os.path.exists(build_dir):
                     print(f"Build directory {build_dir} not found. Skipping valgrind.")
@@ -278,10 +352,24 @@ def main():
                     if "_deps" in dp:
                         continue
                     for f in filenames:
-                        if "test" in f.lower() and os.access(os.path.join(dp, f), os.X_OK) and not f.endswith(".c") and not f.endswith(".h") and not f.endswith(".sh") and not f.endswith(".py") and "parson" not in f.lower():
-                            cmd = ["valgrind", "--leak-check=full", "--error-exitcode=1"]
+                        if (
+                            "test" in f.lower()
+                            and os.access(os.path.join(dp, f), os.X_OK)
+                            and not f.endswith(".c")
+                            and not f.endswith(".h")
+                            and not f.endswith(".sh")
+                            and not f.endswith(".py")
+                            and "parson" not in f.lower()
+                        ):
+                            cmd = [
+                                "valgrind",
+                                "--leak-check=full",
+                                "--error-exitcode=1",
+                            ]
                             if os.path.exists(".valgrind.supp"):
-                                cmd.append(f"--suppressions={os.path.abspath('.valgrind.supp')}")
+                                cmd.append(
+                                    f"--suppressions={os.path.abspath('.valgrind.supp')}"
+                                )
                             cmd.append(os.path.join(dp, f))
                             # Run the test relative to build_dir so it doesn't corrupt repo root
                             rel_f = os.path.relpath(os.path.join(dp, f), build_dir)
@@ -298,7 +386,9 @@ def main():
         # Check if there is a custom shields script
         if os.path.exists(os.path.join("scripts", "pre_commit.py")):
             print("Running repo-specific pre_commit.py for shields...")
-            run_cmd([sys.executable, os.path.join("scripts", "pre_commit.py"), "shields"])
+            run_cmd(
+                [sys.executable, os.path.join("scripts", "pre_commit.py"), "shields"]
+            )
             sys.exit(0)
         elif os.path.exists(os.path.join("scripts", "update_shields.py")):
             print("Running custom scripts/update_shields.py...")
@@ -322,10 +412,20 @@ def main():
             for root, _, files in os.walk("include"):
                 for file in files:
                     if file.endswith(".h"):
-                        with open(os.path.join(root, file), "r", encoding="utf-8", errors="ignore") as f:
+                        with open(
+                            os.path.join(root, file),
+                            "r",
+                            encoding="utf-8",
+                            errors="ignore",
+                        ) as f:
                             lines = f.readlines()
                         for i, line in enumerate(lines):
-                            if "_API " in line or line.startswith("void ") or line.startswith("int ") or line.startswith("char "):
+                            if (
+                                "_API " in line
+                                or line.startswith("void ")
+                                or line.startswith("int ")
+                                or line.startswith("char ")
+                            ):
                                 total_decls += 1
                                 j = i - 1
                                 while j >= 0 and lines[j].strip() == "":
@@ -336,8 +436,20 @@ def main():
             doc_cov = (doc_decls / total_decls) * 100.0
 
         test_cov = None
-        if os.name != 'nt' and is_tool("gcovr") and os.path.exists("build_gcc"):
-            res = subprocess.run(["gcovr", "-r", "..", ".", "--gcov-ignore-parse-errors=negative_hits.warn", "--print-summary"], cwd="build_gcc", capture_output=True, text=True)
+        if os.name != "nt" and is_tool("gcovr") and os.path.exists("build_gcc"):
+            res = subprocess.run(
+                [
+                    "gcovr",
+                    "-r",
+                    "..",
+                    ".",
+                    "--gcov-ignore-parse-errors=negative_hits.warn",
+                    "--print-summary",
+                ],
+                cwd="build_gcc",
+                capture_output=True,
+                text=True,
+            )
             if res.returncode == 0:
                 match = re.search(r"lines:\s+([0-9.]+)%", res.stdout)
                 if match:
@@ -353,10 +465,14 @@ def main():
             Returns:
                 str: The color name for the shield.
             """
-            if pct >= 90: return "brightgreen"
-            if pct >= 80: return "green"
-            if pct >= 70: return "yellowgreen"
-            if pct >= 60: return "yellow"
+            if pct >= 90:
+                return "brightgreen"
+            if pct >= 80:
+                return "green"
+            if pct >= 70:
+                return "yellowgreen"
+            if pct >= 60:
+                return "yellow"
             return "red"
 
         doc_color = get_color(doc_cov)
@@ -384,6 +500,7 @@ def main():
             with open("README.md", "w", encoding="utf-8") as f:
                 f.write(readme)
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
