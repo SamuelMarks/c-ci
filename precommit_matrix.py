@@ -425,6 +425,9 @@ def main():
                                 or line.startswith("void ")
                                 or line.startswith("int ")
                                 or line.startswith("char ")
+                                or line.startswith("ui_error_t ")
+                                or line.startswith("bool ")
+                                or line.startswith("ui_bool_t ")
                             ):
                                 total_decls += 1
                                 j = i - 1
