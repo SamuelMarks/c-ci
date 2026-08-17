@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Pre-commit hook to enforce error percolation in C using libclang.
 
 This module provides strict AST-based checks to ensure that functions
