@@ -5,17 +5,32 @@ SRC_DIR="$PWD"
 BUILD_TYPE="Debug"
 
 # MSVC 2005 path
-export MSVC_2005_PATH="/media/samuel/OS1/Program Files (x86)/Microsoft Visual Studio 8"
+if [ "$(uname)" = "Darwin" ]; then
+    export MSVC_2005_PATH="${MSVC_2005_PATH:-/media/samuel/OS1/Program Files (x86)/Microsoft Visual Studio 8}" # Adjust for macOS if needed
+    DRIVE_PREFIX="Z:"
+    REPO_DRIVE_PREFIX="Z:${SRC_DIR}"
+    # Replace slashes for windows path for the script
+    WIN_REPO_PATH=$(echo "$SRC_DIR" | sed 's/\//\\\\/g')
+    WIN_VARS_PATH="Z:${WIN_REPO_PATH}\\\\vcvarsalls_wine.cmd"
+else
+    export MSVC_2005_PATH="${MSVC_2005_PATH:-/media/samuel/OS1/Program Files (x86)/Microsoft Visual Studio 8}"
+    WIN_VARS_PATH="Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd"
+fi
 
 if [ ! -d "$MSVC_2005_PATH" ]; then
-    echo "MSVC 2005 not found at $MSVC_2005_PATH"
+    echo "Warning: MSVC 2005 not found at $MSVC_2005_PATH."
+    echo "You can set the MSVC_2005_PATH environment variable to override this."
     exit 1
 fi
 
 echo "Starting wineserver..."
-wineserver -k || true
-wineserver -p
-wine wineboot
+if command -v wineserver >/dev/null 2>&1; then
+    wineserver -k || true
+    wineserver -p
+    wine wineboot || true
+else
+    echo "Warning: wineserver not found. Skipping wine initialization."
+fi
 
 FETCH_ARGS=""
 if [ -d "../parson" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_PARSON=\"${SRC_DIR}/../parson\""; fi
@@ -33,21 +48,21 @@ BUILD_DIR="${SRC_DIR}/build_msvc2005_wine_static"
 mkdir -p "$BUILD_DIR"
 
 # Create a sh wrapper for cl.exe to pass via wine
-cat << 'WRAPPER' > "${BUILD_DIR}/cl_wrapper.sh"
+cat << WRAPPER > "${BUILD_DIR}/cl_wrapper.sh"
 #!/bin/sh
-wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && cl.exe $@"
+wine cmd /c "call ${WIN_VARS_PATH} && cl.exe \$@"
 WRAPPER
 chmod +x "${BUILD_DIR}/cl_wrapper.sh"
 
-cat << 'WRAPPER' > "${BUILD_DIR}/link_wrapper.sh"
+cat << WRAPPER > "${BUILD_DIR}/link_wrapper.sh"
 #!/bin/sh
-wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && link.exe $@"
+wine cmd /c "call ${WIN_VARS_PATH} && link.exe \$@"
 WRAPPER
 chmod +x "${BUILD_DIR}/link_wrapper.sh"
 
-cat << 'WRAPPER' > "${BUILD_DIR}/lib_wrapper.sh"
+cat << WRAPPER > "${BUILD_DIR}/lib_wrapper.sh"
 #!/bin/sh
-wine cmd /c "call Z:\\home\\samuel\\repos\\c-ci\\vcvarsalls_wine.cmd && lib.exe $@"
+wine cmd /c "call ${WIN_VARS_PATH} && lib.exe \$@"
 WRAPPER
 chmod +x "${BUILD_DIR}/lib_wrapper.sh"
 

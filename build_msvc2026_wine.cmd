@@ -4,6 +4,9 @@ set "SRC_DIR=%CD%\"
 set "SRC_DIR=%SRC_DIR:~0,-1%"
 set "BUILD_TYPE=Debug"
 
+:: Ensure cmake is in PATH (specifically for custom installations in Wine)
+set "PATH=C:\usr\cmake\bin;%PATH%"
+
 call "%~dp0vcvarsalls2026_wine.cmd"
 if errorlevel 1 exit /b 1
 

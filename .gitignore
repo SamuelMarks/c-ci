@@ -1,6 +1,9 @@
 build/
+build_*/
 logs.zip
 mingw_log.txt
 test.txt
 .idea
 .vscode
+.DS_Store
+__pycache__/

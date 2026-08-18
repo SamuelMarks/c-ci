@@ -4,13 +4,22 @@ set -e
 SRC_DIR="$PWD"
 BUILD_TYPE="Debug"
 
-MSVC_WINE_PATH="${MSVC_WINE_PATH:-$HOME/my_msvc/opt/msvc}"
+if [ "$(uname)" = "Darwin" ]; then
+    MSVC_WINE_PATH="${MSVC_WINE_PATH:-$HOME/my_msvc/opt/msvc}"
+else
+    MSVC_WINE_PATH="${MSVC_WINE_PATH:-$HOME/my_msvc/opt/msvc}"
+fi
+
 export PATH="${MSVC_WINE_PATH}/bin/x64:$PATH"
 
 echo "Starting wineserver..."
-wineserver -k || true
-wineserver -p
-wine wineboot
+if command -v wineserver >/dev/null 2>&1; then
+    wineserver -k || true
+    wineserver -p
+    wine wineboot || true
+else
+    echo "Warning: wineserver not found. Skipping wine initialization."
+fi
 
 FETCH_ARGS=""
 if [ -d "../parson" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_PARSON=\"${SRC_DIR}/../parson\""; fi

@@ -205,6 +205,10 @@ def main():
         sys.exit(0)
 
     elif job == "build":
+        if not os.path.exists("CMakeLists.txt") and toolchain not in ["msvc_2005_wine", "msvc_2026_wine"]:
+            print("No CMakeLists.txt found in current directory. Skipping build.")
+            sys.exit(0)
+
         if toolchain == "gcc" and has_gcc():
             build_dir = "build_gcc"
             os.makedirs(build_dir, exist_ok=True)
@@ -224,6 +228,9 @@ def main():
             )
             run_cmd(["cmake", "--build", "."], cwd=build_dir, env=env)
         elif toolchain == "clang" and has_clang():
+            if not os.path.exists("CMakeLists.txt"):
+                print("No CMakeLists.txt found in current directory. Skipping build.")
+                sys.exit(0)
             build_dir = "build_clang"
             os.makedirs(build_dir, exist_ok=True)
             env = os.environ.copy()
@@ -235,6 +242,9 @@ def main():
             )
             run_cmd(["cmake", "--build", "."], cwd=build_dir, env=env)
         elif toolchain == "msvc_2005_wine" and has_msvc_2005_wine():
+            if not os.path.exists("CMakeLists.txt"):
+                print("No CMakeLists.txt found in current directory. Skipping build.")
+                sys.exit(0)
             build_dir = "build_msvc2005_wine_static"
             # It relies on the pre-existing build_msvc2005_wine.cmd script in c-ci
             script_path = None
@@ -247,6 +257,9 @@ def main():
                 sys.exit(1)
             run_cmd(["wine", "cmd", "/c", script_path])
         elif toolchain == "msvc_2026_wine" and has_msvc_2026_wine():
+            if not os.path.exists("CMakeLists.txt"):
+                print("No CMakeLists.txt found in current directory. Skipping build.")
+                sys.exit(0)
             build_dir = "build_msvc2026_wine_shared"
             script_path = None
             if os.path.exists("build_msvc2026_wine.cmd"):
@@ -258,6 +271,9 @@ def main():
                 sys.exit(1)
             run_cmd(["wine", "cmd", "/c", script_path])
         elif toolchain == "msvc" and has_msvc():
+            if not os.path.exists("CMakeLists.txt"):
+                print("No CMakeLists.txt found in current directory. Skipping build.")
+                sys.exit(0)
             build_dir = "build_msvc"
             os.makedirs(build_dir, exist_ok=True)
             run_cmd(
