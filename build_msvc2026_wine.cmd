@@ -4,13 +4,11 @@ set "SRC_DIR=%CD%\"
 set "SRC_DIR=%SRC_DIR:~0,-1%"
 set "BUILD_TYPE=Debug"
 
-:: Ensure cmake is in PATH (specifically for custom installations in Wine)
-set "PATH=C:\usr\cmake\bin;%PATH%"
-
-call "%~dp0vcvarsalls2026_wine.cmd"
+:: On Windows natively, we don't use wine. We just configure the native MSVC environment.
+call "%~dp0vcvarsalls.cmd" latest
 if errorlevel 1 exit /b 1
 
-:: Ensure ninja.exe is available
+:: Ensure ninja.exe is available (if not found in native env)
 where ninja.exe >nul 2>nul
 if errorlevel 1 (
     echo Ninja not found in PATH. Downloading ninja-win.zip...
@@ -21,7 +19,7 @@ if errorlevel 1 (
 )
 
 echo ======================================================================
-echo Win MSVC 2026 Wine ^| Shared Lib (MD) ^| Unicode ^| LTO OFF ^| FetchContent
+echo Win MSVC 2026 (Native Equivalent) ^| Shared Lib (MD) ^| Unicode ^| LTO OFF ^| FetchContent
 echo ======================================================================
 set "BUILD_DIR=%SRC_DIR%\build_msvc2026_wine_shared"
 
@@ -54,7 +52,7 @@ cd "%BUILD_DIR%"
 ctest -C "%BUILD_TYPE%" --output-on-failure
 if errorlevel 1 goto :fail
 
-echo MSVC 2026 Wine variation completed successfully.
+echo MSVC 2026 (Native Equivalent) variation completed successfully.
 exit /b 0
 
 :fail

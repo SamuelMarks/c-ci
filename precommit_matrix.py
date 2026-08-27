@@ -337,7 +337,7 @@ def main():
 
         env["_NO_DEBUG_HEAP"] = "1"
 
-        run_cmd(["ctest", "--output-on-failure"], cwd=build_dir, env=env)
+        run_cmd(["ctest", "-C", "Debug", "--output-on-failure"], cwd=build_dir, env=env)
 
         # Run custom script for cdd-c or other repos that need extra test logic
         if toolchain == "gcc" and os.path.exists(
@@ -416,7 +416,7 @@ def main():
             sys.exit(0)
         elif os.path.exists(os.path.join("scripts", "update_badges.sh")):
             print("Running custom scripts/update_badges.sh...")
-            run_cmd(["bash", os.path.join("scripts", "update_badges.sh")])
+            run_cmd(["C:\\Program Files\\Git\\bin\\bash.exe", os.path.join("scripts", "update_badges.sh")])
             sys.exit(0)
 
         # Fallback generic shields

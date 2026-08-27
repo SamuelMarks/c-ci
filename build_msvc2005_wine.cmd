@@ -4,10 +4,11 @@ set "SRC_DIR=%CD%\"
 set "SRC_DIR=%SRC_DIR:~0,-1%"
 set "BUILD_TYPE=Debug"
 
-call "%~dp0vcvarsalls_wine.cmd"
+:: Use the native MSVC 2005 environment instead of wine.
+call "%~dp0vcvarsalls.cmd" 2005
 if errorlevel 1 exit /b 1
 
-:: Ensure ninja.exe is available
+:: Ensure ninja.exe is available (if not found in native env)
 where ninja.exe >nul 2>nul
 if errorlevel 1 (
     echo Ninja not found in PATH. Downloading ninja-win.zip...
@@ -18,7 +19,7 @@ if errorlevel 1 (
 )
 
 echo ======================================================================
-echo Win MSVC 2005 Wine ^| Static Lib (MTd) ^| LTO OFF ^| Multi-thread ^| RTCs
+echo Win MSVC 2005 (Native Equivalent) ^| Static Lib (MTd) ^| LTO OFF ^| Multi-thread ^| RTCs
 echo ======================================================================
 set "BUILD_DIR=%CD%\build_msvc2005_wine_static"
 
@@ -39,8 +40,6 @@ if errorlevel 1 exit /b 1
 cmake --build "%BUILD_DIR%" --config "%BUILD_TYPE%"
 if errorlevel 1 exit /b 1
 pushd "%BUILD_DIR%"
-echo Copying MSVC 2005 debug redistributables...
-copy "%VCINSTALLDIR%\redist\Debug_NonRedist\x86\Microsoft.VC80.DebugCRT\*.*" .
 
 set "EXTRA_PATH="
 if exist "_deps" (
@@ -54,4 +53,4 @@ ctest -C "%BUILD_TYPE%" --output-on-failure
 if errorlevel 1 exit /b 1
 popd
 
-echo MSVC 2005 Wine variation completed successfully.
+echo MSVC 2005 (Native Equivalent) variation completed successfully.
