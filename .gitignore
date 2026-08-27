@@ -7,3 +7,21 @@ test.txt
 .vscode
 .DS_Store
 __pycache__/
+
+# Temporary debug and wrapper scripts
+build_msvc2026_test.sh
+build_msvc2026_test_nmake.cmd
+build_msvc2026_test_nmake.sh
+build_msvc2026_wine_shared_cmake_call.cmd
+build_msvc_wine_test.sh
+run_cl.cmd
+run_msvc_build*.cmd
+run_nmake_test.cmd
+wine_cmake_wrap.cmd
+
+# Third-party tools
+ninja-bin/
+
+# Temporary patch / backup files
+*.bak
+*.rej

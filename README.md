@@ -119,10 +119,19 @@ jobs:
 In addition to the GitHub Actions workflow, this repository provides a suite of local build scripts. These scripts mirror the CI matrix locally and introduce supplementary targets that are tricky or expensive to run on standard GitHub-hosted runners.
 
 ### Duplicating CI Locally
-You can run the major GitHub Actions variations directly on your Windows development machine:
+You can run the major GitHub Actions variations directly on your development machine. We provide tools to dynamically parse and run the CI workflows locally without pushing:
+*   **`replicate_gh_matrix.py`:** A Python script that parses the `.github/workflows/c-cmake-ci.yml` file to extract the matrix of jobs, and allows running specific MSVC, Apple Clang, or Linux GCC/Clang jobs locally to replicate CI behavior. It handles cross-platform execution intelligently (running macOS jobs natively on macOS, Linux jobs via Docker/WSL, and MSVC jobs via Windows or WINE).
 *   **`duplicate_gh_actions.cmd`:** Runs the full suite sequentially, simulating the GitHub Actions matrix for MSVC (2026, 2022, 2005), MinGW, Cygwin, Ubuntu (via Docker), and Alpine (via Docker).
 *   **`build_all_parallel.ps1`:** Runs the same builds in parallel using PowerShell jobs for drastically reduced local test times.
 *   **`build_all.cmd` / `build_all_serial.cmd`:** Alternative entry points for sequential batch testing.
+
+### WINE Support for MSVC on macOS / Linux
+You do not need a Windows machine to test MSVC! This repository includes robust wrappers to run the Microsoft Visual C++ compiler directly on macOS and Linux using WINE.
+*   **`build_msvc2005_wine.sh` / `build_msvc2005_wine.cmd`:** Compiles your project using the legacy MSVC 2005 compiler through WINE.
+*   **`build_msvc2026_wine.cmd`:** Compiles your project using the modern MSVC 2026 compiler through WINE.
+
+### Pre-commit Orchestration
+*   **`precommit_matrix.py`:** A cross-platform matrix build tool that orchestrates pre-commit checks locally. It handles running `cppcheck`, CMake builds, executing tests via `ctest`, running memory leak detection with `valgrind`, and automatically generating shields/badges for your `README.md`. It gracefully detects and utilizes WINE if you are testing MSVC targets on Unix-like systems.
 
 ### Passing Extra Arguments to Local Scripts
 All local build scripts now accept extra arguments that are passed directly to the underlying `cmake -S` configuration step.

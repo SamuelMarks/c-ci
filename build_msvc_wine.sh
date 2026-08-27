@@ -15,7 +15,7 @@ export PATH="${MSVC_WINE_PATH}/bin/x64:$PATH"
 echo "Starting wineserver..."
 if command -v wineserver >/dev/null 2>&1; then
     wineserver -k || true
-    wineserver -p
+    wineserver -p || true
     wine wineboot || true
 else
     echo "Warning: wineserver not found. Skipping wine initialization."
