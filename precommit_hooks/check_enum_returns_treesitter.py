@@ -263,8 +263,8 @@ def gather_files(
 
     Args:
         paths (list): A list of file or directory paths to search.
-        exclude_patterns (list, optional): A list of glob patterns for files to exclude.
-        use_default_exceptions (bool, optional): Whether to exclude test files by default.
+        exclude_patterns (list): A list of glob patterns for files to exclude.
+        use_default_exceptions (bool): Whether to exclude test files by default.
 
     Returns:
         list: A sorted list of unique C file paths.
@@ -289,11 +289,7 @@ def gather_files(
 
 
 def main():
-    """Executes the pre-commit hook logic, parsing arguments and checking files.
-
-    Returns:
-        None
-    """
+    """Executes the pre-commit hook logic, parsing arguments and checking files."""
     parser = argparse.ArgumentParser(
         description="Enforce enum return types for C functions using tree-sitter."
     )

@@ -47,6 +47,9 @@ In addition to CI orchestration, `c-ci` provides a robust, two-layered defense m
 2.  **Layer 2 (AST CFG Analysis):**
     To ensure developers don't just capture the error to silence the compiler (e.g., `result_t rc = foo();` and then ignoring `rc`), we provide a dedicated Python pre-commit hook in `precommit_hooks/check_error_percolation_clang.py`. Powered by `libclang`, this hook parses the Abstract Syntax Tree (AST) to strictly enforce that the captured error is immediately checked in an `if` statement, not mutated, and correctly returned up the call stack (including `goto cleanup;` idioms).
 
+3.  **Layer 3 (Anti-`(void)` Cast Bypass):**
+    Even with `nodiscard` enabled, developers might try to overcome compiler warnings by explicitly casting an error-returning call or error variable to `(void)` (e.g., `(void)foo();` or `(void)rc;`). We provide `precommit_hooks/check_no_discard_void_clang.py` to parse the AST and disallow `(void)` casts on error enums and `nodiscard`-annotated returns.
+
 For detailed usage, see the documentation in [`include/README.md`](include/README.md) and [`precommit_hooks/README.md`](precommit_hooks/README.md). You can also run the hook manually against your codebase to generate an LLM-friendly markdown report for automated auditing.
 
 ---

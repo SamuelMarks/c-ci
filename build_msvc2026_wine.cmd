@@ -5,7 +5,7 @@ set "SRC_DIR=%SRC_DIR:~0,-1%"
 set "BUILD_TYPE=Debug"
 
 :: On Windows natively, we don't use wine. We just configure the native MSVC environment.
-call "%~dp0vcvarsalls.cmd" latest
+call "%~dp0vcvarsalls2026_wine.cmd"
 if errorlevel 1 exit /b 1
 
 :: Ensure ninja.exe is available (if not found in native env)
@@ -33,7 +33,7 @@ if exist "..\c-str-span" echo set FETCH_ARGS=%%FETCH_ARGS%% -DFETCHCONTENT_SOURC
 if exist "..\c-orm" echo set FETCH_ARGS=%%FETCH_ARGS%% -DFETCHCONTENT_SOURCE_DIR_C-ORM="%SRC_DIR%\..\c-orm">> "%BUILD_DIR%_cmake_call.cmd"
 if exist "..\c-fs" echo set FETCH_ARGS=%%FETCH_ARGS%% -DFETCHCONTENT_SOURCE_DIR_CFS="%SRC_DIR%\..\c-fs">> "%BUILD_DIR%_cmake_call.cmd"
 
-echo cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G Ninja -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_SHARED_LIBS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCDD_CHARSET=UNICODE -DCDD_THREADING=ON -DCDD_DEPS=FETCHCONTENT -DBUILD_TESTING=ON -DCDD_MSVC_RTC=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL -DFETCHCONTENT_UPDATES_DISCONNECTED=ON %%FETCH_ARGS%% %%*>> "%BUILD_DIR%_cmake_call.cmd"
+echo cmake -S "%SRC_DIR%" -B "%BUILD_DIR%" -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_SHARED_LIBS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCDD_CHARSET=UNICODE -DCDD_THREADING=ON -DCDD_DEPS=FETCHCONTENT -DBUILD_TESTING=ON -DCDD_MSVC_RTC=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL -DFETCHCONTENT_UPDATES_DISCONNECTED=ON %%FETCH_ARGS%% %%*>> "%BUILD_DIR%_cmake_call.cmd"
 
 call "%BUILD_DIR%_cmake_call.cmd" %*
 if errorlevel 1 goto :fail

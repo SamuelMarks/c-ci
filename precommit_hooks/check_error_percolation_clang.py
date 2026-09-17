@@ -467,7 +467,13 @@ def process_file(
 
     violations = []
 
-    def visit(node: Cursor, current_caller: Optional[str] = None):
+    def visit(node: Cursor, current_caller: Optional[str] = None) -> None:
+        """Recursively visits AST nodes checking for unpercolated enum calls.
+
+        Args:
+            node: The current AST cursor.
+            current_caller: Name of the enclosing function caller, if any.
+        """
         if node.kind == CursorKind.FUNCTION_DECL:
             current_caller = node.spelling
             if is_ignored(current_caller, ignore_callers):

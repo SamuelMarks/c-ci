@@ -104,3 +104,11 @@ repos:
       #   language: python
       #   types: [c]
       #   additional_dependencies: [libclang]
+
+      # Check for (void) casts bypassing no_discard or error enums using libclang
+      # - id: check-no-discard-void-clang
+      #   name: Check no-discard void casts (libclang)
+      #   entry: precommit_hooks/check_no_discard_void_clang.py
+      #   language: python
+      #   types: [c]
+      #   additional_dependencies: [libclang]

@@ -22,7 +22,14 @@ INDEX = clang.cindex.Index.create()
 
 
 def parse_code(code: str) -> tuple[clang.cindex.TranslationUnit, str]:
-    """Helper to parse code string to TU."""
+    """Helper to parse code string to TU.
+
+    Args:
+        code: C source code string to parse.
+
+    Returns:
+        A tuple of (TranslationUnit, temporary file path).
+    """
     fd, path = tempfile.mkstemp(suffix=".c")
     with os.fdopen(fd, "w") as f:
         f.write(code)
@@ -58,7 +65,11 @@ def test_violation_symbol_tracking():
 
 
 def test_find_c_files(tmp_path):
-    """Test directory expansion."""
+    """Test directory expansion.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+    """
     d = tmp_path / "src"
     d.mkdir()
     f1 = d / "a.c"
@@ -154,7 +165,11 @@ def test_goto_cleanup_invalid_mutation():
 
 
 def test_main_no_args(monkeypatch):
-    """Test main with no args."""
+    """Test main with no args.
+
+    Args:
+        monkeypatch: Pytest monkeypatch fixture.
+    """
     monkeypatch.setattr("sys.argv", ["script"])
     assert main() == 0
 
@@ -162,7 +177,13 @@ def test_main_no_args(monkeypatch):
 @mock.patch("check_error_percolation_clang.find_c_files")
 @mock.patch("check_error_percolation_clang.process_file")
 def test_main_success(mock_process, mock_find, monkeypatch):
-    """Test main success returns 0."""
+    """Test main success returns 0.
+
+    Args:
+        mock_process: Mocked process_file function.
+        mock_find: Mocked find_c_files function.
+        monkeypatch: Pytest monkeypatch fixture.
+    """
     mock_find.return_value = ["f.c"]
     mock_process.return_value = []
     monkeypatch.setattr("sys.argv", ["script", "f.c", "--compile-args", "-I."])
@@ -172,7 +193,14 @@ def test_main_success(mock_process, mock_find, monkeypatch):
 @mock.patch("check_error_percolation_clang.find_c_files")
 @mock.patch("check_error_percolation_clang.process_file")
 def test_main_violations_text(mock_process, mock_find, monkeypatch, capsys):
-    """Test main with violations returns 1 in text format."""
+    """Test main with violations returns 1 in text format.
+
+    Args:
+        mock_process: Mocked process_file function.
+        mock_find: Mocked find_c_files function.
+        monkeypatch: Pytest monkeypatch fixture.
+        capsys: Pytest capsys fixture.
+    """
     mock_find.return_value = ["f.c"]
     mock_process.return_value = [Violation("f.c", 1, 1, "err", "func")]
     monkeypatch.setattr("sys.argv", ["script", "f.c", "--format", "text"])
@@ -184,7 +212,14 @@ def test_main_violations_text(mock_process, mock_find, monkeypatch, capsys):
 @mock.patch("check_error_percolation_clang.find_c_files")
 @mock.patch("check_error_percolation_clang.process_file")
 def test_main_violations_markdown(mock_process, mock_find, monkeypatch, capsys):
-    """Test main with violations returns 1 in markdown format."""
+    """Test main with violations returns 1 in markdown format.
+
+    Args:
+        mock_process: Mocked process_file function.
+        mock_find: Mocked find_c_files function.
+        monkeypatch: Pytest monkeypatch fixture.
+        capsys: Pytest capsys fixture.
+    """
     mock_find.return_value = ["f.c"]
     mock_process.return_value = [Violation("f.c", 1, 1, "err", "func")]
     monkeypatch.setattr("sys.argv", ["script", "f.c", "--format", "markdown"])
@@ -461,47 +496,30 @@ def test_invalid_type_resolution():
     """Test resolution of invalid underlying types."""
     from check_error_percolation_clang import get_underlying_type
 
-    # Just mock a clang type that returns INVALID
-    class MockTypeInvalid:
-        @property
-        def kind(self):
-            return clang.cindex.TypeKind.INVALID
+    mock_type_invalid = mock.Mock()
+    mock_type_invalid.kind = clang.cindex.TypeKind.INVALID
 
-    class MockDecl:
-        @property
-        def underlying_typedef_type(self):
-            return MockTypeInvalid()
+    mock_decl = mock.Mock()
+    mock_decl.underlying_typedef_type = mock_type_invalid
 
-    class MockTypeTypedef:
-        @property
-        def kind(self):
-            return clang.cindex.TypeKind.TYPEDEF
+    mock_type_typedef = mock.Mock()
+    mock_type_typedef.kind = clang.cindex.TypeKind.TYPEDEF
+    mock_type_typedef.get_declaration.return_value = mock_decl
 
-        def get_declaration(self):
-            return MockDecl()
+    mock_type_valid = mock.Mock()
+    mock_type_valid.kind = clang.cindex.TypeKind.ENUM
 
-    class MockTypeValid:
-        @property
-        def kind(self):
-            return clang.cindex.TypeKind.ENUM
+    mock_decl_valid = mock.Mock()
+    mock_decl_valid.underlying_typedef_type = mock_type_valid
 
-    class MockDeclValid:
-        @property
-        def underlying_typedef_type(self):
-            return MockTypeValid()
+    mock_type_typedef_valid = mock.Mock()
+    mock_type_typedef_valid.kind = clang.cindex.TypeKind.TYPEDEF
+    mock_type_typedef_valid.get_declaration.return_value = mock_decl_valid
 
-    class MockTypeTypedefValid:
-        @property
-        def kind(self):
-            return clang.cindex.TypeKind.TYPEDEF
-
-        def get_declaration(self):
-            return MockDeclValid()
-
-    assert get_underlying_type(MockTypeInvalid()).kind == clang.cindex.TypeKind.INVALID
-    assert get_underlying_type(MockTypeTypedef()).kind == clang.cindex.TypeKind.TYPEDEF
+    assert get_underlying_type(mock_type_invalid).kind == clang.cindex.TypeKind.INVALID
+    assert get_underlying_type(mock_type_typedef).kind == clang.cindex.TypeKind.TYPEDEF
     assert (
-        get_underlying_type(MockTypeTypedefValid()).kind == clang.cindex.TypeKind.ENUM
+        get_underlying_type(mock_type_typedef_valid).kind == clang.cindex.TypeKind.ENUM
     )
 
 
@@ -509,21 +527,15 @@ def test_invalid_type_resolution_elaborated():
     """Test resolution of invalid underlying types via elaborated."""
     from check_error_percolation_clang import get_underlying_type
 
-    class MockTypeInvalid:
-        @property
-        def kind(self):
-            return clang.cindex.TypeKind.INVALID
+    mock_type_invalid = mock.Mock()
+    mock_type_invalid.kind = clang.cindex.TypeKind.INVALID
 
-    class MockTypeElaborated:
-        @property
-        def kind(self):
-            return clang.cindex.TypeKind.ELABORATED
-
-        def get_named_type(self):
-            return MockTypeInvalid()
+    mock_type_elaborated = mock.Mock()
+    mock_type_elaborated.kind = clang.cindex.TypeKind.ELABORATED
+    mock_type_elaborated.get_named_type.return_value = mock_type_invalid
 
     assert (
-        get_underlying_type(MockTypeElaborated()).kind
+        get_underlying_type(mock_type_elaborated).kind
         == clang.cindex.TypeKind.ELABORATED
     )
 
@@ -533,17 +545,11 @@ def test_analyze_call_valid_type():
     from check_error_percolation_clang import analyze_call
 
     call_expr = mock.Mock(kind=clang.cindex.CursorKind.CALL_EXPR)
-
-    class MockType:
-        kind = clang.cindex.TypeKind.INT
-
-    class MockTypeInvalid:
-        kind = clang.cindex.TypeKind.INVALID
-
-        def get_result(self):
-            return MockType()
-
-    call_expr.type = MockTypeInvalid()
+    mock_type_invalid = mock.Mock(kind=clang.cindex.TypeKind.INVALID)
+    mock_type_invalid.get_result.return_value = mock.Mock(
+        kind=clang.cindex.TypeKind.INT
+    )
+    call_expr.type = mock_type_invalid
 
     # Should exit early because it's not an enum type, but doesn't need get_result()
     assert analyze_call(call_expr, {}) == []
@@ -557,11 +563,7 @@ def test_analyze_call_stops_at_func_decl():
     func_decl = mock.Mock(kind=clang.cindex.CursorKind.FUNCTION_DECL, spelling="myfunc")
 
     parent_map = {call_expr: func_decl}
-
-    class MockType:
-        kind = clang.cindex.TypeKind.ENUM
-
-    call_expr.type = MockType()
+    call_expr.type = mock.Mock(kind=clang.cindex.TypeKind.ENUM)
 
     with mock.patch("check_error_percolation_clang.is_enum_type", return_value=True):
         with mock.patch(
@@ -624,10 +626,7 @@ def test_analyze_call_no_var_name():
     # Hierarchy: COMOUND_STMT -> BINARY_OPERATOR -> CALL_EXPR
     parent_map = {call_expr: bin_op, bin_op: block}
 
-    class MockType:
-        kind = clang.cindex.TypeKind.ENUM
-
-    call_expr.type = MockType()
+    call_expr.type = mock.Mock(kind=clang.cindex.TypeKind.ENUM)
 
     with mock.patch("check_error_percolation_clang.is_enum_type", return_value=True):
         with mock.patch(
@@ -656,6 +655,15 @@ def test_is_macro_instantiation_attr():
     orig_hasattr = hasattr
 
     def mock_hasattr(obj, name):
+        """Mock hasattr function.
+
+        Args:
+            obj: Object being inspected.
+            name: Attribute name string.
+
+        Returns:
+            False for clang_Location_isFromMainFile, or original hasattr result.
+        """
         if name == "clang_Location_isFromMainFile":
             return False
         return orig_hasattr(obj, name)
@@ -670,16 +678,12 @@ def test_is_macro_instantiation_attr():
 
 
 def test_analyze_call_no_block():
-    from check_error_percolation_clang import analyze_call, is_enum_type
+    """Test analyze_call when call expression has no parent block."""
+    from check_error_percolation_clang import analyze_call
 
     # Mock a call expression that returns an enum but has no parent block
     call_expr = mock.Mock(kind=clang.cindex.CursorKind.CALL_EXPR)
-
-    # Ensure it passes the enum check
-    class MockType:
-        kind = clang.cindex.TypeKind.ENUM
-
-    call_expr.type = MockType()
+    call_expr.type = mock.Mock(kind=clang.cindex.TypeKind.ENUM)
 
     with mock.patch("check_error_percolation_clang.is_enum_type", return_value=True):
         with mock.patch(
@@ -709,26 +713,6 @@ def test_analyze_call_direct_call_expr():
             v = analyze_call(call_expr, parent_map)
             assert len(v) == 1
             assert "discarded" in v[0].message
-    """Test resolution of invalid underlying types via elaborated."""
-    from check_error_percolation_clang import get_underlying_type
-
-    class MockTypeInvalid:
-        @property
-        def kind(self):
-            return clang.cindex.TypeKind.INVALID
-
-    class MockTypeElaborated:
-        @property
-        def kind(self):
-            return clang.cindex.TypeKind.ELABORATED
-
-        def get_named_type(self):
-            return MockTypeInvalid()
-
-    assert (
-        get_underlying_type(MockTypeElaborated()).kind
-        == clang.cindex.TypeKind.ELABORATED
-    )
 
 
 def test_get_next_statement_missing():
@@ -847,7 +831,12 @@ def test_process_file_load_error():
 
 @mock.patch("check_error_percolation_clang.find_c_files")
 def test_main_no_c_files(mock_find, monkeypatch):
-    """Test main returns 0 when no C files are found."""
+    """Test main returns 0 when no C files are found.
+
+    Args:
+        mock_find: Mocked find_c_files function.
+        monkeypatch: Pytest monkeypatch fixture.
+    """
     mock_find.return_value = []
     monkeypatch.setattr("sys.argv", ["script", "dir/"])
     assert main() == 0

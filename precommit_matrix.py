@@ -124,10 +124,19 @@ def has_msvc_2026_wine():
     """
     if os.name == "nt":
         return False
-    msvc_2026_path = os.environ.get(
-        "MSVC_2026_PATH",
-        os.path.expanduser("~/my_msvc/opt/msvc/vc/tools/msvc/14.51.36231"),
-    )
+    msvc_2026_path = os.environ.get("MSVC_2026_PATH")
+    if not msvc_2026_path:
+        for candidate in [
+            os.path.expanduser("~/my_msvc/VC/Tools/MSVC/14.51.36231"),
+            os.path.expanduser("~/my_msvc/opt/msvc/vc/tools/msvc/14.51.36231"),
+            os.path.expanduser("~/my_msvc/vc/tools/msvc/14.51.36231"),
+            "/opt/msvc/VC/Tools/MSVC/14.51.36231",
+        ]:
+            if os.path.exists(candidate):
+                msvc_2026_path = candidate
+                break
+        if not msvc_2026_path:
+            msvc_2026_path = os.path.expanduser("~/my_msvc/VC/Tools/MSVC/14.51.36231")
     return is_tool("wine") and os.path.exists(msvc_2026_path)
 
 
@@ -158,12 +167,7 @@ def has_cygwin():
 
 
 def main():
-    """
-    Execute pre-commit jobs based on provided arguments.
-
-    Returns:
-        None
-    """
+    """Execute pre-commit jobs based on provided arguments."""
     if len(sys.argv) < 2:
         print(
             "Usage: python precommit_matrix.py [cppcheck|build|test|valgrind|shields] [toolchain]"
@@ -205,7 +209,10 @@ def main():
         sys.exit(0)
 
     elif job == "build":
-        if not os.path.exists("CMakeLists.txt") and toolchain not in ["msvc_2005_wine", "msvc_2026_wine"]:
+        if not os.path.exists("CMakeLists.txt") and toolchain not in [
+            "msvc_2005_wine",
+            "msvc_2026_wine",
+        ]:
             print("No CMakeLists.txt found in current directory. Skipping build.")
             sys.exit(0)
 
@@ -261,15 +268,25 @@ def main():
                 print("No CMakeLists.txt found in current directory. Skipping build.")
                 sys.exit(0)
             build_dir = "build_msvc2026_wine_shared"
-            script_path = None
-            if os.path.exists("build_msvc2026_wine.cmd"):
-                script_path = "build_msvc2026_wine.cmd"
-            elif os.path.exists(os.path.join("..", "c-ci", "build_msvc2026_wine.cmd")):
-                script_path = os.path.join("..", "c-ci", "build_msvc2026_wine.cmd")
+            sh_script = None
+            if os.path.exists("build_msvc_wine.sh"):
+                sh_script = "build_msvc_wine.sh"
+            elif os.path.exists(os.path.join("..", "c-ci", "build_msvc_wine.sh")):
+                sh_script = os.path.join("..", "c-ci", "build_msvc_wine.sh")
+            if sh_script and os.name != "nt":
+                run_cmd(["sh", sh_script])
             else:
-                print("Could not find build_msvc2026_wine.cmd")
-                sys.exit(1)
-            run_cmd(["wine", "cmd", "/c", script_path])
+                script_path = None
+                if os.path.exists("build_msvc2026_wine.cmd"):
+                    script_path = "build_msvc2026_wine.cmd"
+                elif os.path.exists(
+                    os.path.join("..", "c-ci", "build_msvc2026_wine.cmd")
+                ):
+                    script_path = os.path.join("..", "c-ci", "build_msvc2026_wine.cmd")
+                else:
+                    print("Could not find build_msvc2026_wine.cmd")
+                    sys.exit(1)
+                run_cmd(["wine", "cmd", "/c", script_path])
         elif toolchain == "msvc" and has_msvc():
             if not os.path.exists("CMakeLists.txt"):
                 print("No CMakeLists.txt found in current directory. Skipping build.")
@@ -416,7 +433,12 @@ def main():
             sys.exit(0)
         elif os.path.exists(os.path.join("scripts", "update_badges.sh")):
             print("Running custom scripts/update_badges.sh...")
-            run_cmd(["C:\\Program Files\\Git\\bin\\bash.exe", os.path.join("scripts", "update_badges.sh")])
+            run_cmd(
+                [
+                    "C:\\Program Files\\Git\\bin\\bash.exe",
+                    os.path.join("scripts", "update_badges.sh"),
+                ]
+            )
             sys.exit(0)
 
         # Fallback generic shields
@@ -436,15 +458,41 @@ def main():
                         ) as f:
                             lines = f.readlines()
                         for i, line in enumerate(lines):
+                            if not line or line[0].isspace():
+                                continue
+                            s = line.strip()
                             if (
-                                "_API " in line
-                                or line.startswith("void ")
-                                or line.startswith("int ")
-                                or line.startswith("char ")
-                                or line.startswith("ui_error_t ")
-                                or line.startswith("bool ")
-                                or line.startswith("ui_bool_t ")
+                                not s
+                                or s.startswith("#")
+                                or s.startswith("/*")
+                                or s.startswith("*")
+                                or s.startswith("//")
                             ):
+                                continue
+                            is_decl = False
+                            if "_API" in s or "_EXPORT" in s:
+                                is_decl = True
+                            elif s.startswith("extern ") and "(" in s:
+                                is_decl = True
+                            elif (
+                                s.startswith("void ")
+                                or s.startswith("int ")
+                                or s.startswith("char ")
+                                or s.startswith("ui_error_t ")
+                                or s.startswith("bool ")
+                                or s.startswith("ui_bool_t ")
+                            ) and "(" in s:
+                                is_decl = True
+                            elif re.match(
+                                r"^(?:typedef\s+)?struct\s+[a-zA-Z0-9_]+\s*\{", s
+                            ):
+                                is_decl = True
+                            elif re.match(
+                                r"^(?:typedef\s+)?enum\s+[a-zA-Z0-9_]+\s*\{", s
+                            ):
+                                is_decl = True
+
+                            if is_decl:
                                 total_decls += 1
                                 j = i - 1
                                 while j >= 0 and lines[j].strip() == "":
@@ -456,15 +504,21 @@ def main():
 
         test_cov = None
         if os.name != "nt" and is_tool("gcovr") and os.path.exists("build_gcc"):
+            cmd = [
+                "gcovr",
+                "-r",
+                "..",
+                ".",
+                "--gcov-ignore-parse-errors=all",
+                "--gcov-ignore-errors=all",
+                "--print-summary",
+                "-e",
+                ".*vendor.*",
+            ]
+            if os.path.exists("gcovr.cfg"):
+                cmd.extend(["--config", "../gcovr.cfg"])
             res = subprocess.run(
-                [
-                    "gcovr",
-                    "-r",
-                    "..",
-                    ".",
-                    "--gcov-ignore-parse-errors=negative_hits.warn",
-                    "--print-summary",
-                ],
+                cmd,
                 cwd="build_gcc",
                 capture_output=True,
                 text=True,
@@ -506,8 +560,18 @@ def main():
             with open("README.md", "r", encoding="utf-8") as f:
                 readme = f.read()
 
-            readme = re.sub(r"\[!\[Doc Coverage\]\(.*?\)\]\(.*?\)\n?", "", readme)
-            readme = re.sub(r"\[!\[Test Coverage\]\(.*?\)\]\(.*?\)\n?", "", readme)
+            readme = re.sub(
+                r"\[?!\[doc[ _]?coverage\]\(.*?\)\]?(?:\(.*?\))?\n?",
+                "",
+                readme,
+                flags=re.IGNORECASE,
+            )
+            readme = re.sub(
+                r"\[?!\[test[ _]?coverage\]\(.*?\)\]?(?:\(.*?\))?\n?",
+                "",
+                readme,
+                flags=re.IGNORECASE,
+            )
 
             license_regex = r"(\[!\[License\].*?\]\(.*?\)\n?)"
             insert_str = r"\1" + doc_shield + "\n"

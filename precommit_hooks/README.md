@@ -79,7 +79,7 @@ Add the following to your `.pre-commit-config.yaml`:
 
 ### Advanced Configuration (Error Percolation)
 
-The error percolation hook supports ignoring specific functions or wildcards using `--ignore-callers` and `--ignore-callees`. 
+The error percolation hook supports ignoring specific functions or wildcards using `--ignore-callers` and `--ignore-callees`.
 It also handles complex control flows like `switch` statements, inline `if ((rc = foo()) != OK)` assignments, and ignores macro instantiations (such as assertions) by default.
 
 ```yaml
@@ -130,3 +130,34 @@ result_t my_func(void);
 #### 2. Layer 2: Pre-commit Hook (AST CFG Analysis)
 Even if the developer captures the variable to silence the compiler (`result_t rc = my_func();`), the `check_error_percolation_clang.py` hook kicks in. It parses the AST to ensure the developer didn't just ignore `rc`, mutate it to a hacky `-1`, or forget to actively `return rc;`.
 
+#### 3. Layer 3: Anti-`(void)` Cast Bypass Hook (`check_no_discard_void_clang.py`)
+Even with `nodiscard` enabled, standard compilers (GCC, Clang, MSVC) allow casting an expression to `(void)` to explicitly silence `-Wunused-result` or `[[nodiscard]]` warnings (e.g. `(void)foo();` or capturing `error_t rc = foo(); (void)rc;`).
+
+The `check_no_discard_void_clang.py` hook closes this loophole. Powered by `libclang`, it parses the AST to detect and flag any `(void)` casts applied to error enum return values, error enum variables/parameters, or `nodiscard`-annotated functions.
+
+### Pre-commit Configuration (Anti-Void Hook)
+
+Add the following to your `.pre-commit-config.yaml`:
+
+```yaml
+  - repo: local
+    hooks:
+      - id: check-no-discard-void-clang
+        name: Check no-discard void casts (libclang)
+        entry: precommit_hooks/check_no_discard_void_clang.py
+        language: python
+        types: [c]
+        additional_dependencies: [libclang]
+```
+
+### Manual Usage & Auditing
+
+You can test or audit manually:
+
+```bash
+# Check single or multiple files
+./precommit_hooks/check_no_discard_void_clang.py src/my_file.c
+
+# Audit entire directory in Markdown format
+./precommit_hooks/check_no_discard_void_clang.py src/ --format markdown
+```
