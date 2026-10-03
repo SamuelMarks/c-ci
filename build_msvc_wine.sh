@@ -3,9 +3,9 @@ set -e
 
 SRC_DIR="$PWD"
 BUILD_TYPE="Debug"
-PARALLEL_JOBS="4"
-if [ "$(uname)" = "Darwin" ]; then
-    PARALLEL_JOBS="1"
+# PARALLEL_JOBS="4"
+if [ -z "$PARALLEL_JOBS" ]; then
+    PARALLEL_JOBS="4"
 fi
 
 if [ -z "$MSVC_WINE_PATH" ]; then
@@ -46,6 +46,7 @@ if [ -d "../cdd-c" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_CDD
 if [ -d "../c-str-span" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C-STR-SPAN=\"${SRC_DIR}/../c-str-span\""; fi
 if [ -d "../c-orm" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C-ORM=\"${SRC_DIR}/../c-orm\""; fi
 if [ -d "../c-fs" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_CFS=\"${SRC_DIR}/../c-fs\""; fi
+if [ -d "../auto-win-msvc" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_AUTO_WIN_MSVC="${SRC_DIR}/../auto-win-msvc" -DFETCHCONTENT_SOURCE_DIR_AUTO-WIN-MSVC="${SRC_DIR}/../auto-win-msvc""; fi
 
 
 echo "======================================================================"

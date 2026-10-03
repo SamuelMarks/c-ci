@@ -318,12 +318,19 @@ def process_file(
                     if arg == "-o":
                         skip_next = True
                         continue
-                    if (
-                        arg == "-c"
-                        or arg == os.path.abspath(filename)
-                        or arg == filename
-                    ):
+                    if arg == "-c":
                         continue
+                    if not arg.startswith("-"):
+                        try:
+                            if (
+                                arg == filename
+                                or os.path.abspath(arg) == os.path.abspath(filename)
+                                or os.path.realpath(arg) == os.path.realpath(filename)
+                                or os.path.basename(arg) == os.path.basename(filename)
+                            ):
+                                continue
+                        except Exception:
+                            pass
                     filtered_args.append(arg)
                 args_to_use = filtered_args
                 break
@@ -406,6 +413,10 @@ def setup_libclang(libclang_path: Optional[str]) -> None:
                 "/usr/lib/x86_64-linux-gnu/libclang.so*",
                 "/usr/local/lib/libclang.so*",
                 "/usr/lib/libclang.so*",
+                "/opt/homebrew/Cellar/llvm*/*/lib/libclang.dylib",
+                "/opt/homebrew/lib/libclang.dylib",
+                "/usr/local/Cellar/llvm*/*/lib/libclang.dylib",
+                "/usr/local/lib/libclang.dylib",
             ]
             found = False
             for pattern in search_paths:
