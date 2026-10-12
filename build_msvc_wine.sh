@@ -29,7 +29,7 @@ export WINE_AUTO_INSTALL=0
 
 echo "Starting wineserver..."
 if command -v wineserver >/dev/null 2>&1; then
-    # wineserver -k
+    wineserver -k || true
     wineserver -p >/dev/null 2>&1 || true
     wine wineboot || true
     wine reg add "HKCU\\Software\\Wine\\WineDbg" /v ShowCrashDialog /t REG_DWORD /d 0 /f >/dev/null 2>&1 || true
@@ -40,12 +40,12 @@ fi
 
 FETCH_ARGS=""
 if [ -d "../parson" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_PARSON=\"${SRC_DIR}/../parson\""; fi
-if [ -d "../c-abstract-http" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C-ABSTRACT-HTTP=\"${SRC_DIR}/../c-abstract-http\""; fi
+if [ -d "../c-abstract-http" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C-ABSTRACT-HTTP=\"${SRC_DIR}/../c-abstract-http\" -DFETCHCONTENT_SOURCE_DIR_C_ABSTRACT_HTTP=\"${SRC_DIR}/../c-abstract-http\""; fi
 if [ -d "../c89stringutils" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C89STRINGUTILS=\"${SRC_DIR}/../c89stringutils\""; fi
 if [ -d "../cdd-c" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_CDD-C=\"${SRC_DIR}/../cdd-c\" -DFETCHCONTENT_SOURCE_DIR_CDD_C=\"${SRC_DIR}/../cdd-c\""; fi
-if [ -d "../c-str-span" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C-STR-SPAN=\"${SRC_DIR}/../c-str-span\""; fi
-if [ -d "../c-orm" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C-ORM=\"${SRC_DIR}/../c-orm\""; fi
-if [ -d "../c-fs" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_CFS=\"${SRC_DIR}/../c-fs\""; fi
+if [ -d "../c-str-span" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C-STR-SPAN=\"${SRC_DIR}/../c-str-span\" -DFETCHCONTENT_SOURCE_DIR_C_STR_SPAN=\"${SRC_DIR}/../c-str-span\""; fi
+if [ -d "../c-orm" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_C-ORM=\"${SRC_DIR}/../c-orm\" -DFETCHCONTENT_SOURCE_DIR_C_ORM=\"${SRC_DIR}/../c-orm\""; fi
+if [ -d "../c-fs" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_CFS=\"${SRC_DIR}/../c-fs\" -DFETCHCONTENT_SOURCE_DIR_C_FS=\"${SRC_DIR}/../c-fs\""; fi
 if [ -d "../auto-win-msvc" ]; then FETCH_ARGS="$FETCH_ARGS -DFETCHCONTENT_SOURCE_DIR_AUTO_WIN_MSVC="${SRC_DIR}/../auto-win-msvc" -DFETCHCONTENT_SOURCE_DIR_AUTO-WIN-MSVC="${SRC_DIR}/../auto-win-msvc""; fi
 
 
@@ -109,4 +109,4 @@ cd "${SRC_DIR}"
 
 echo "All MSVC-Wine variations completed successfully."
 
-# wineserver -k
+wineserver -k || true

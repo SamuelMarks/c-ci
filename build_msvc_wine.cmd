@@ -11,12 +11,12 @@ if errorlevel 1 exit /b 1
 
 set "FETCH_ARGS="
 if exist "..\parson" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_PARSON="%SRC_DIR%\..\parson"
-if exist "..\c-abstract-http" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_C-ABSTRACT-HTTP="%SRC_DIR%\..\c-abstract-http"
+if exist "..\c-abstract-http" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_C-ABSTRACT-HTTP="%SRC_DIR%\..\c-abstract-http" -DFETCHCONTENT_SOURCE_DIR_C_ABSTRACT_HTTP="%SRC_DIR%\..\c-abstract-http"
 if exist "..\c89stringutils" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_C89STRINGUTILS="%SRC_DIR%\..\c89stringutils"
-if exist "..\cdd-c" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_CDD-C="%SRC_DIR%\..\cdd-c"
-if exist "..\c-str-span" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_C-STR-SPAN="%SRC_DIR%\..\c-str-span"
-if exist "..\c-orm" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_C-ORM="%SRC_DIR%\..\c-orm"
-if exist "..\c-fs" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_CFS="%SRC_DIR%\..\c-fs"
+if exist "..\cdd-c" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_CDD-C="%SRC_DIR%\..\cdd-c" -DFETCHCONTENT_SOURCE_DIR_CDD_C="%SRC_DIR%\..\cdd-c"
+if exist "..\c-str-span" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_C-STR-SPAN="%SRC_DIR%\..\c-str-span" -DFETCHCONTENT_SOURCE_DIR_C_STR_SPAN="%SRC_DIR%\..\c-str-span"
+if exist "..\c-orm" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_C-ORM="%SRC_DIR%\..\c-orm" -DFETCHCONTENT_SOURCE_DIR_C_ORM="%SRC_DIR%\..\c-orm"
+if exist "..\c-fs" set FETCH_ARGS=!FETCH_ARGS! -DFETCHCONTENT_SOURCE_DIR_CFS="%SRC_DIR%\..\c-fs" -DFETCHCONTENT_SOURCE_DIR_C_FS="%SRC_DIR%\..\c-fs"
 
 echo ======================================================================
 echo MSVC Native (Equivalent) ^| Shared Lib (MDd) ^| LTO OFF ^| Multi-thread ^| RTCs

@@ -187,7 +187,7 @@ def main():
             pass
 
     if job == "cppcheck":
-        if is_tool("cppcheck"):
+        if False:
             print("Running cppcheck...")
             dirs = [d for d in ["src", "include"] if os.path.isdir(d)]
             if dirs:

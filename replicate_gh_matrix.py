@@ -195,10 +195,19 @@ def _run_emscripten_in_docker(job: Dict[str, Any], source_dir: str) -> None:
 
     extra_mounts = []
     parent_dir = os.path.dirname(os.path.abspath(source_dir))
-    for dep in ['cdd-c', 'c-fs', 'c-abstract-http', 'c89stringutils', 'c-str-span', 'greatest', 'parson', 'sqlite3']:
+    for dep in [
+        "cdd-c",
+        "c-fs",
+        "c-abstract-http",
+        "c89stringutils",
+        "c-str-span",
+        "greatest",
+        "parson",
+        "sqlite3",
+    ]:
         dep_path = os.path.join(parent_dir, dep)
         if os.path.isdir(dep_path):
-            extra_mounts.extend(['-v', f'{dep_path}:/{dep}'])
+            extra_mounts.extend(["-v", f"{dep_path}:/{dep}"])
     user_vcpkg = os.path.expanduser("~/repos/vcpkg")
     if deps == "VCPKG":
         setup_steps.append(
@@ -233,12 +242,13 @@ def _run_emscripten_in_docker(job: Dict[str, Any], source_dir: str) -> None:
         + extra_mounts
         + [
             "-w",
-        container_src,
-        "emscripten/emsdk:latest",
-        "sh",
-        "-c",
-        cmd_str,
-    ])
+            container_src,
+            "emscripten/emsdk:latest",
+            "sh",
+            "-c",
+            cmd_str,
+        ]
+    )
 
     print(f"\n> Executing Docker command:\n{' '.join(docker_cmd)}")
     res = subprocess.run(docker_cmd)
@@ -334,10 +344,19 @@ def _run_linux_in_docker(
 
     extra_mounts = []
     parent_dir = os.path.dirname(os.path.abspath(source_dir))
-    for dep in ['cdd-c', 'c-fs', 'c-abstract-http', 'c89stringutils', 'c-str-span', 'greatest', 'parson', 'sqlite3']:
+    for dep in [
+        "cdd-c",
+        "c-fs",
+        "c-abstract-http",
+        "c89stringutils",
+        "c-str-span",
+        "greatest",
+        "parson",
+        "sqlite3",
+    ]:
         dep_path = os.path.join(parent_dir, dep)
         if os.path.isdir(dep_path):
-            extra_mounts.extend(['-v', f'{dep_path}:/{dep}'])
+            extra_mounts.extend(["-v", f"{dep_path}:/{dep}"])
     user_vcpkg = os.path.expanduser("~/repos/vcpkg")
     if deps == "VCPKG":
         setup_steps.append(
