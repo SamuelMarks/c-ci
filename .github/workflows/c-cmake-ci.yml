@@ -295,19 +295,19 @@ jobs:
           rm env_vars.json
 
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Cache vcpkg
         id: cache-vcpkg
         if: matrix.deps == 'VCPKG'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/vcpkg
           key: ${{ runner.os }}-vcpkg-project0-v2
 
       - name: checkout vcpkg
         if: matrix.deps == 'VCPKG' && steps.cache-vcpkg.outputs.cache-hit != 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: "offscale/vcpkg"
           ref: project0
@@ -425,7 +425,7 @@ jobs:
 
       - name: Setup Emscripten
         if: matrix.compiler == 'emscripten'
-        uses: mymindstorm/setup-emsdk@v14
+        uses: mymindstorm/setup-emsdk@v16
 
       - name: Configure CMake
         shell: bash
@@ -605,23 +605,26 @@ jobs:
             if [ -n "$TMP" ]; then CMAKE_ENV_ARGS+=("TMP=$TMP"); fi
             if [ -n "$HOME" ]; then CMAKE_ENV_ARGS+=("HOME=$HOME"); fi
           fi
-          
+
           # Disable MSVC UI Debug Dialogs by setting environment variables commonly checked or by running a custom pre-test script if needed.
-          CMAKE_ENV_ARGS+=("_NO_DEBUG_HEAP=1")
+          export _NO_DEBUG_HEAP=1
+          if [ "${{ inputs.disable_env_inheritance }}" = "true" ]; then
+            CMAKE_ENV_ARGS+=("_NO_DEBUG_HEAP=1")
+          fi
 
           if [ ${#CMAKE_ENV_ARGS[@]} -gt 0 ]; then
-            cmake -E env "${CMAKE_ENV_ARGS[@]}" ctest -C "${{ inputs.build_type }}" --output-on-failure
+            cmake -E env "${CMAKE_ENV_ARGS[@]}" ctest -C "${{ inputs.build_type }}" --output-on-failure --timeout 300 < /dev/null
           else
-            ctest -C "${{ inputs.build_type }}" --output-on-failure
+            ctest -C "${{ inputs.build_type }}" --output-on-failure --timeout 300 < /dev/null
           fi
           EOF
 
           chmod +x ./run_tests.sh
 
           if [ "${{ matrix.compiler }}" = "cygwin" ]; then
-            C:/cygwin/bin/bash.exe --login -o igncr -c 'cd "$(cygpath -u "$GITHUB_WORKSPACE/build")"; ./run_tests.sh'
+            C:/cygwin/bin/bash.exe --login -o igncr -c 'cd "$(cygpath -u "$GITHUB_WORKSPACE/build")"; ./run_tests.sh' < /dev/null
           else
-            bash ./run_tests.sh
+            bash ./run_tests.sh < /dev/null
           fi
 
       - name: Run Valgrind
@@ -632,6 +635,7 @@ jobs:
           cat << 'EOF' > run_valgrind.sh
           set -e
           CMAKE_ENV_ARGS=()
+          export _NO_DEBUG_HEAP=1
           if [ "${{ inputs.disable_env_inheritance }}" = "true" ]; then
             CMAKE_ENV_ARGS+=("--ignore-environ")
             CMAKE_ENV_ARGS+=("PATH=$PATH")
@@ -641,8 +645,8 @@ jobs:
             if [ -n "$TEMP" ]; then CMAKE_ENV_ARGS+=("TEMP=$TEMP"); fi
             if [ -n "$TMP" ]; then CMAKE_ENV_ARGS+=("TMP=$TMP"); fi
             if [ -n "$HOME" ]; then CMAKE_ENV_ARGS+=("HOME=$HOME"); fi
+            CMAKE_ENV_ARGS+=("_NO_DEBUG_HEAP=1")
           fi
-          CMAKE_ENV_ARGS+=("_NO_DEBUG_HEAP=1")
 
           if [ ${#CMAKE_ENV_ARGS[@]} -gt 0 ]; then
             cmake -E env "${CMAKE_ENV_ARGS[@]}" ctest -T memcheck --output-on-failure

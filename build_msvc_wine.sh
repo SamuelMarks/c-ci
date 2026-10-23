@@ -24,7 +24,7 @@ export PATH="${MSVC_WINE_PATH}/bin/x64:$PATH"
 export MVK_CONFIG_LOG_LEVEL=0
 export WINEPREFIX="${WINEPREFIX:-$HOME/.wine_cdd_c}"
 export WINEDEBUG=-all
-export WINEDLLOVERRIDES="mscoree,mshtml="
+export WINEDLLOVERRIDES="mscoree,mshtml=;winemac.drv=d;x11drv=d;explorer.exe=d;rpcss.exe=d;plugplay.exe=d"
 export WINE_AUTO_INSTALL=0
 
 echo "Starting wineserver..."
